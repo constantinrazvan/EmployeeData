@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -9,6 +10,7 @@ using EmployeeData.Models;
 
 namespace EmployeeData.Controllers;
 
+[Authorize(Roles = "Administrator,HR")]
 public class ReportsController : Controller
 {
     private readonly AppDbContext _context;
@@ -18,20 +20,8 @@ public class ReportsController : Controller
         _context = context;
     }
 
-    private bool IsAuthenticated() =>
-        !string.IsNullOrEmpty(HttpContext.Session.GetString("Username"));
-
-    private bool IsAdminOrHr()
-    {
-        var role = HttpContext.Session.GetString("Role");
-        return role == "Administrator" || role == "HR";
-    }
-
     public async Task<IActionResult> Index()
     {
-        if (!IsAuthenticated()) return RedirectToAction("Login", "Account");
-        if (!IsAdminOrHr()) return RedirectToAction("Index", "Employees");
-
         var persons = await _context.Persons.Include(p => p.Department).ToListAsync();
         var departments = await _context.Departments.Include(d => d.Employees).ToListAsync();
         var now = DateTime.Now;
@@ -81,27 +71,19 @@ public class ReportsController : Controller
 
     public async Task<IActionResult> ExportHeadcount()
     {
-        if (!IsAuthenticated()) return RedirectToAction("Login", "Account");
-        if (!IsAdminOrHr()) return RedirectToAction("Index", "Employees");
-
         var departments = await _context.Departments.Include(d => d.Employees).ToListAsync();
 
         var sb = new StringBuilder();
         sb.AppendLine("Department,Code,Manager,Total Employees,Active,Inactive");
         foreach (var d in departments.OrderByDescending(d => d.Employees.Count))
-        {
             sb.AppendLine($"\"{d.Name}\",\"{d.Code}\",\"{d.ManagerName}\",{d.Employees.Count},{d.Employees.Count(e => e.Status == "Active")},{d.Employees.Count(e => e.Status == "Inactive")}");
-        }
 
-        var bytes = Encoding.UTF8.GetBytes(sb.ToString());
-        return File(bytes, "text/csv", $"headcount_report_{DateTime.Now:yyyyMMdd}.csv");
+        var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true);
+        return File(encoding.GetBytes(sb.ToString()), "text/csv; charset=utf-8", $"headcount_report_{DateTime.Now:yyyyMMdd}.csv");
     }
 
     public async Task<IActionResult> ExportEmployees()
     {
-        if (!IsAuthenticated()) return RedirectToAction("Login", "Account");
-        if (!IsAdminOrHr()) return RedirectToAction("Index", "Employees");
-
         var persons = await _context.Persons.Include(p => p.Department).ToListAsync();
 
         var sb = new StringBuilder();
@@ -109,10 +91,10 @@ public class ReportsController : Controller
         foreach (var p in persons.OrderBy(p => p.LastName))
         {
             var tenure = Math.Floor((DateTime.Now - p.HireDate).TotalDays / 365);
-            sb.AppendLine($"\"{p.FullName}\",\"{p.FirstName}\",\"{p.LastName}\",\"{p.Email}\",\"{p.Phone}\",\"{p.Position}\",\"{p.Department?.Name}\",{p.HireDate:yyyy-MM-dd},{p.Status},{tenure}");
+            sb.AppendLine($"\"{p.FullName}\",\"{p.FirstName}\",\"{p.LastName}\",\"{p.Email}\",\"{p.Phone}\",\"{p.Position}\",\"{p.Department?.Name ?? "-"}\",{p.HireDate:yyyy-MM-dd},{p.Status},{tenure}");
         }
 
-        var bytes = Encoding.UTF8.GetBytes(sb.ToString());
-        return File(bytes, "text/csv", $"employees_export_{DateTime.Now:yyyyMMdd}.csv");
+        var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true);
+        return File(encoding.GetBytes(sb.ToString()), "text/csv; charset=utf-8", $"employees_export_{DateTime.Now:yyyyMMdd}.csv");
     }
 }

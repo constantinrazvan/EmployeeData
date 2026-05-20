@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -8,6 +9,7 @@ using EmployeeData.Models;
 
 namespace EmployeeData.Controllers;
 
+[Authorize]
 public class DashboardController : Controller
 {
     private readonly AppDbContext _context;
@@ -17,14 +19,8 @@ public class DashboardController : Controller
         _context = context;
     }
 
-    private bool IsAuthenticated() =>
-        !string.IsNullOrEmpty(HttpContext.Session.GetString("Username"));
-
     public async Task<IActionResult> Index()
     {
-        if (!IsAuthenticated())
-            return RedirectToAction("Login", "Account");
-
         var persons = await _context.Persons.Include(p => p.Department).ToListAsync();
         var departments = await _context.Departments.Include(d => d.Employees).ToListAsync();
         var now = DateTime.Now;
@@ -36,20 +32,14 @@ public class DashboardController : Controller
 
         var last30 = now.AddDays(-30);
         ViewBag.NewHiresLast30 = persons.Count(p => p.HireDate >= last30);
-
-        ViewBag.AnniversariesThisMonth = persons.Count(p =>
-            p.HireDate.Month == now.Month && p.HireDate.Year != now.Year);
+        ViewBag.AnniversariesThisMonth = persons.Count(p => p.HireDate.Month == now.Month && p.HireDate.Year != now.Year);
 
         ViewBag.DeptLabels = departments.Select(d => d.Name).ToList();
         ViewBag.DeptCounts = departments.Select(d => d.Employees.Count).ToList();
 
-        ViewBag.RecentHires = persons
-            .OrderByDescending(p => p.HireDate)
-            .Take(5)
-            .ToList();
+        ViewBag.RecentHires = persons.OrderByDescending(p => p.HireDate).Take(5).ToList();
 
-        var role = HttpContext.Session.GetString("Role");
-        if (role == "Administrator")
+        if (User.IsInRole("Administrator"))
         {
             ViewBag.RecentLogs = await _context.AuditLogs
                 .OrderByDescending(l => l.Timestamp)
@@ -57,8 +47,7 @@ public class DashboardController : Controller
                 .ToListAsync();
         }
 
-        ViewBag.PendingOnboarding = await _context.OnboardingTasks
-            .CountAsync(t => !t.IsCompleted);
+        ViewBag.PendingOnboarding = await _context.OnboardingTasks.CountAsync(t => !t.IsCompleted);
 
         ViewBag.UpcomingAnniversaries = persons
             .Where(p => {

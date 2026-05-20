@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -9,6 +10,7 @@ using EmployeeData.Models;
 
 namespace EmployeeData.Controllers;
 
+[Authorize]
 public class OnboardingController : Controller
 {
     private readonly AppDbContext _context;
@@ -18,26 +20,14 @@ public class OnboardingController : Controller
         _context = context;
     }
 
-    private bool IsAuthenticated() =>
-        !string.IsNullOrEmpty(HttpContext.Session.GetString("Username"));
-
-    private string GetUsername() =>
-        HttpContext.Session.GetString("Username") ?? "system";
+    private string GetUsername() => User.Identity?.Name ?? "system";
 
     public async Task<IActionResult> Employee(int id)
     {
-        if (!IsAuthenticated()) return RedirectToAction("Login", "Account");
-
-        var person = await _context.Persons
-            .Include(p => p.Department)
-            .FirstOrDefaultAsync(p => p.Id == id);
-
+        var person = await _context.Persons.Include(p => p.Department).FirstOrDefaultAsync(p => p.Id == id);
         if (person == null) return NotFound();
 
-        var tasks = await _context.OnboardingTasks
-            .Where(t => t.PersonId == id)
-            .OrderBy(t => t.SortOrder)
-            .ToListAsync();
+        var tasks = await _context.OnboardingTasks.Where(t => t.PersonId == id).OrderBy(t => t.SortOrder).ToListAsync();
 
         ViewBag.Person = person;
         ViewBag.CompletedCount = tasks.Count(t => t.IsCompleted);
@@ -49,8 +39,6 @@ public class OnboardingController : Controller
     [HttpPost]
     public async Task<IActionResult> Toggle(int taskId, int personId)
     {
-        if (!IsAuthenticated()) return RedirectToAction("Login", "Account");
-
         var task = await _context.OnboardingTasks.FindAsync(taskId);
         if (task == null) return NotFound();
 
@@ -59,20 +47,15 @@ public class OnboardingController : Controller
         task.CompletedBy = task.IsCompleted ? GetUsername() : string.Empty;
 
         await _context.SaveChangesAsync();
-
         return RedirectToAction("Employee", new { id = personId });
     }
 
     [HttpPost]
     public async Task<IActionResult> AddTask(int personId, string title, string description)
     {
-        if (!IsAuthenticated()) return RedirectToAction("Login", "Account");
-
         if (!string.IsNullOrWhiteSpace(title))
         {
-            var maxOrder = await _context.OnboardingTasks
-                .Where(t => t.PersonId == personId)
-                .MaxAsync(t => (int?)t.SortOrder) ?? 0;
+            var maxOrder = await _context.OnboardingTasks.Where(t => t.PersonId == personId).MaxAsync(t => (int?)t.SortOrder) ?? 0;
 
             _context.OnboardingTasks.Add(new OnboardingTask
             {
@@ -92,8 +75,6 @@ public class OnboardingController : Controller
     [HttpPost]
     public async Task<IActionResult> DeleteTask(int taskId, int personId)
     {
-        if (!IsAuthenticated()) return RedirectToAction("Login", "Account");
-
         var task = await _context.OnboardingTasks.FindAsync(taskId);
         if (task != null)
         {

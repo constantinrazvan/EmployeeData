@@ -1,11 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "9FyPDQLUceU=",
+  "dgSpecHash": "Fmm7F6a4X+g=",
   "success": true,
   "projectFilePath": "/Users/razvanconstantin/Desktop/EmployeeData/EmployeeData.csproj",
   "expectedPackageFiles": [
     "/Users/razvanconstantin/.nuget/packages/azure.core/1.47.1/azure.core.1.47.1.nupkg.sha512",
     "/Users/razvanconstantin/.nuget/packages/azure.identity/1.14.2/azure.identity.1.14.2.nupkg.sha512",
+    "/Users/razvanconstantin/.nuget/packages/microsoft.aspnetcore.identity.entityframeworkcore/10.0.8/microsoft.aspnetcore.identity.entityframeworkcore.10.0.8.nupkg.sha512",
     "/Users/razvanconstantin/.nuget/packages/microsoft.bcl.asyncinterfaces/8.0.0/microsoft.bcl.asyncinterfaces.8.0.0.nupkg.sha512",
     "/Users/razvanconstantin/.nuget/packages/microsoft.bcl.cryptography/9.0.4/microsoft.bcl.cryptography.9.0.4.nupkg.sha512",
     "/Users/razvanconstantin/.nuget/packages/microsoft.data.sqlclient/6.1.1/microsoft.data.sqlclient.6.1.1.nupkg.sha512",

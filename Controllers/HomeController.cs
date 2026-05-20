@@ -8,10 +8,8 @@ public class HomeController : Controller
 {
     public IActionResult Index()
     {
-        if (!string.IsNullOrEmpty(HttpContext.Session.GetString("Username")))
-        {
+        if (User.Identity?.IsAuthenticated == true)
             return RedirectToAction("Index", "Dashboard");
-        }
         return RedirectToAction("Login", "Account");
     }
 

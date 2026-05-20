@@ -1,9 +1,11 @@
-@using Microsoft.AspNetCore.Http
-@inject IHttpContextAccessor HttpContextAccessor
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<EmployeeData.Models.AppUser> SignInManager
+@inject UserManager<EmployeeData.Models.AppUser> UserManager
 @{
-    var username = HttpContextAccessor.HttpContext?.Session.GetString("Username");
-    var fullName = HttpContextAccessor.HttpContext?.Session.GetString("FullName");
-    var userRole = HttpContextAccessor.HttpContext?.Session.GetString("Role");
+    var username = User.Identity?.Name;
+    var appUser = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
+    var fullName = appUser?.FullName ?? username;
+    var userRole = User.IsInRole("Administrator") ? "Administrator" : User.IsInRole("HR") ? "HR" : "Employee";
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
 }
 <!DOCTYPE html>

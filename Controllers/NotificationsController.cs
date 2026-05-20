@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -8,6 +9,7 @@ using EmployeeData.Data;
 
 namespace EmployeeData.Controllers;
 
+[Authorize]
 public class NotificationsController : Controller
 {
     private readonly AppDbContext _context;
@@ -17,16 +19,9 @@ public class NotificationsController : Controller
         _context = context;
     }
 
-    private bool IsAuthenticated() =>
-        !string.IsNullOrEmpty(HttpContext.Session.GetString("Username"));
-
     public async Task<IActionResult> GetBadge()
     {
-        if (!IsAuthenticated())
-            return Json(new { count = 0, items = new List<object>() });
-
         var now = DateTime.Now;
-        var role = HttpContext.Session.GetString("Role");
         var notifications = new List<object>();
 
         var persons = await _context.Persons.Include(p => p.Department).ToListAsync();
@@ -38,8 +33,7 @@ public class NotificationsController : Controller
             var daysUntil = (annivThisYear - now.Date).TotalDays;
             if (daysUntil <= 7 && p.HireDate.Year != now.Year)
             {
-                var years = now.Year - p.HireDate.Year + (annivThisYear.Year > now.Year ? 0 : 0);
-                years = annivThisYear.Year - p.HireDate.Year;
+                var years = annivThisYear.Year - p.HireDate.Year;
                 notifications.Add(new {
                     type = "anniversary",
                     icon = "calendar",
@@ -50,8 +44,7 @@ public class NotificationsController : Controller
             }
         }
 
-        var pendingOnboarding = await _context.OnboardingTasks
-            .CountAsync(t => !t.IsCompleted);
+        var pendingOnboarding = await _context.OnboardingTasks.CountAsync(t => !t.IsCompleted);
         if (pendingOnboarding > 0)
         {
             notifications.Add(new {
@@ -63,11 +56,9 @@ public class NotificationsController : Controller
             });
         }
 
-        if (role == "Administrator")
+        if (User.IsInRole("Administrator"))
         {
-            var longInactive = persons.Count(p =>
-                p.Status == "Inactive" &&
-                (now - p.HireDate).TotalDays > 30);
+            var longInactive = persons.Count(p => p.Status == "Inactive" && (now - p.HireDate).TotalDays > 30);
             if (longInactive > 0)
             {
                 notifications.Add(new {

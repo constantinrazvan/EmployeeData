@@ -1,35 +1,34 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Linq;
 using EmployeeData.Data;
 using EmployeeData.Models;
-using EmployeeData.Helpers;
 
 namespace EmployeeData.Controllers;
 
 public class AccountController : Controller
 {
+    private readonly SignInManager<AppUser> _signInManager;
+    private readonly UserManager<AppUser> _userManager;
     private readonly AppDbContext _context;
 
-    public AccountController(AppDbContext context)
+    public AccountController(SignInManager<AppUser> signInManager, UserManager<AppUser> userManager, AppDbContext context)
     {
+        _signInManager = signInManager;
+        _userManager = userManager;
         _context = context;
     }
 
     [HttpGet]
     public IActionResult Login()
     {
-        if (!string.IsNullOrEmpty(HttpContext.Session.GetString("Username")))
-        {
+        if (User.Identity?.IsAuthenticated == true)
             return RedirectToAction("Index", "Employees");
-        }
         return View();
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Login(string username, string password)
+    public async Task<IActionResult> Login(string username, string password)
     {
         var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
 
@@ -39,24 +38,21 @@ public class AccountController : Controller
             return View();
         }
 
-        var user = _context.Users.FirstOrDefault(u => u.Username == username);
+        var result = await _signInManager.PasswordSignInAsync(username, password, isPersistent: false, lockoutOnFailure: false);
 
-        if (user != null && PasswordHasher.VerifyPassword(password, user.PasswordHash))
+        if (result.Succeeded)
         {
-            HttpContext.Session.SetString("Username", user.Username);
-            HttpContext.Session.SetString("FullName", user.FullName);
-            HttpContext.Session.SetString("Role", user.Role);
-
+            var user = await _userManager.FindByNameAsync(username);
             var log = new AuditLog
             {
-                Username = user.Username,
+                Username = username,
                 Action = "Login",
-                Details = $"User '{user.FullName}' ({user.Role}) successfully logged in.",
+                Details = $"User '{user?.FullName}' successfully logged in.",
                 IpAddress = ipAddress,
                 Timestamp = DateTime.Now
             };
             _context.AuditLogs.Add(log);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return RedirectToAction("Index", "Employees");
         }
@@ -65,23 +61,23 @@ public class AccountController : Controller
 
         var failedLog = new AuditLog
         {
-            Username = string.IsNullOrEmpty(username) ? "Unauthenticated" : username,
+            Username = username,
             Action = "Login Failure",
             Details = $"Failed login attempt for username '{username}'.",
             IpAddress = ipAddress,
             Timestamp = DateTime.Now
         };
         _context.AuditLogs.Add(failedLog);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
         return View();
     }
 
     [HttpGet]
-    public IActionResult Logout()
+    public async Task<IActionResult> Logout()
     {
-        var username = HttpContext.Session.GetString("Username") ?? "Unauthenticated";
-        var fullName = HttpContext.Session.GetString("FullName") ?? "";
+        var username = User.Identity?.Name ?? "Unauthenticated";
+        var user = await _userManager.FindByNameAsync(username);
         var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
 
         if (username != "Unauthenticated")
@@ -90,15 +86,15 @@ public class AccountController : Controller
             {
                 Username = username,
                 Action = "Logout",
-                Details = $"User '{fullName}' logged out from the application.",
+                Details = $"User '{user?.FullName ?? username}' logged out from the application.",
                 IpAddress = ipAddress,
                 Timestamp = DateTime.Now
             };
             _context.AuditLogs.Add(log);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        HttpContext.Session.Clear();
+        await _signInManager.SignOutAsync();
         return RedirectToAction("Login");
     }
 }
