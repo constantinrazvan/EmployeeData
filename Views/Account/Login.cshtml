@@ -1,3 +1,4 @@
+@model EmployeeData.Models.LoginViewModel
 @{
     ViewData["Title"] = "Login";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -6,31 +7,38 @@
 <div class="login-page d-flex justify-content-center align-items-center min-vh-100">
     <div class="mx-auto" style="width: 100%; max-width: 420px;">
 
-        <!-- Card -->
         <div class="card border-0 p-4" style="border-radius:14px;">
             <h5 class="fw-bold text-dark mb-1">Sign in</h5>
             <p class="text-muted small mb-4">Enter your credentials to access the portal.</p>
 
-            <form asp-action="Login" method="post">
+            <form asp-action="Login" method="post" novalidate>
                 @Html.AntiForgeryToken()
 
-                @if (!ViewData.ModelState.IsValid)
+                @{
+                    var globalErrors = ViewData.ModelState[""]?.Errors;
+                }
+                @if (globalErrors != null && globalErrors.Count > 0)
                 {
-                    <div class="alert alert-danger border-0 py-2 px-3 mb-3 small rounded-3">
-                        @Html.ValidationSummary(true, "", new { @class = "m-0" })
+                    <div class="alert alert-danger border-0 py-2 px-3 mb-3 small rounded-3 d-flex align-items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        <span>@globalErrors[0].ErrorMessage</span>
                     </div>
                 }
 
                 <div class="mb-3">
-                    <label for="username" class="form-label small fw-semibold text-muted">Username</label>
-                    <input type="text" class="form-control" id="username" name="username"
-                           required autocomplete="off" placeholder="Enter username" />
+                    <label asp-for="Username" class="form-label small fw-semibold text-muted">Username</label>
+                    <input asp-for="Username"
+                           class="form-control @(ViewData.ModelState["Username"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                           autocomplete="off" placeholder="Enter username" />
+                    <span asp-validation-for="Username" class="invalid-feedback"></span>
                 </div>
 
                 <div class="mb-4">
-                    <label for="password" class="form-label small fw-semibold text-muted">Password</label>
-                    <input type="password" class="form-control" id="password" name="password"
-                           required placeholder="Enter password" />
+                    <label asp-for="Password" class="form-label small fw-semibold text-muted">Password</label>
+                    <input asp-for="Password"
+                           class="form-control @(ViewData.ModelState["Password"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                           placeholder="Enter password" />
+                    <span asp-validation-for="Password" class="invalid-feedback"></span>
                 </div>
 
                 <button type="submit" class="btn btn-primary w-100 fw-semibold py-2">

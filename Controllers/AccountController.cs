@@ -23,54 +23,48 @@ public class AccountController : Controller
     {
         if (User.Identity?.IsAuthenticated == true)
             return RedirectToAction("Index", "Employees");
-        return View();
+        return View(new LoginViewModel());
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Login(string username, string password)
+    public async Task<IActionResult> Login(LoginViewModel model)
     {
+        if (!ModelState.IsValid)
+            return View(model);
+
         var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
 
-        if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
-        {
-            ModelState.AddModelError("", "Username and password are required.");
-            return View();
-        }
-
-        var result = await _signInManager.PasswordSignInAsync(username, password, isPersistent: false, lockoutOnFailure: false);
+        var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, isPersistent: false, lockoutOnFailure: false);
 
         if (result.Succeeded)
         {
-            var user = await _userManager.FindByNameAsync(username);
-            var log = new AuditLog
+            var user = await _userManager.FindByNameAsync(model.Username);
+            _context.AuditLogs.Add(new AuditLog
             {
-                Username = username,
+                Username = model.Username,
                 Action = "Login",
                 Details = $"User '{user?.FullName}' successfully logged in.",
                 IpAddress = ipAddress,
                 Timestamp = DateTime.Now
-            };
-            _context.AuditLogs.Add(log);
+            });
             await _context.SaveChangesAsync();
-
             return RedirectToAction("Index", "Employees");
         }
 
         ModelState.AddModelError("", "Incorrect username or password.");
 
-        var failedLog = new AuditLog
+        _context.AuditLogs.Add(new AuditLog
         {
-            Username = username,
+            Username = model.Username,
             Action = "Login Failure",
-            Details = $"Failed login attempt for username '{username}'.",
+            Details = $"Failed login attempt for username '{model.Username}'.",
             IpAddress = ipAddress,
             Timestamp = DateTime.Now
-        };
-        _context.AuditLogs.Add(failedLog);
+        });
         await _context.SaveChangesAsync();
 
-        return View();
+        return View(model);
     }
 
     [HttpGet]
