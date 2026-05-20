@@ -171,6 +171,6 @@
 /Users/razvanconstantin/Desktop/EmployeeData/bin/Debug/net10.0/runtimes/win-arm64/native/Microsoft.Data.SqlClient.SNI.dll
 /Users/razvanconstantin/Desktop/EmployeeData/bin/Debug/net10.0/runtimes/win-x64/native/Microsoft.Data.SqlClient.SNI.dll
 /Users/razvanconstantin/Desktop/EmployeeData/bin/Debug/net10.0/runtimes/win-x86/native/Microsoft.Data.SqlClient.SNI.dll
-/Users/razvanconstantin/Desktop/EmployeeData/obj/Debug/net10.0/compressed/dinyqdjda5-{0}-mfgtl1be6o-mfgtl1be6o.gz
 /Users/razvanconstantin/Desktop/EmployeeData/obj/Debug/net10.0/EmployeeData.sourcelink.json
 /Users/razvanconstantin/Desktop/EmployeeData/bin/Debug/net10.0/Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+/Users/razvanconstantin/Desktop/EmployeeData/obj/Debug/net10.0/compressed/dinyqdjda5-{0}-i3h94nuxts-i3h94nuxts.gz

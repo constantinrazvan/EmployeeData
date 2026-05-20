@@ -21,11 +21,13 @@ body {
    ============================================= */
 
 :root {
+  --bs-primary: #6366f1;
+  --bs-primary-rgb: 99, 102, 241;
   --sidebar-width: 248px;
-  --sidebar-bg: #1e1b4b;
-  --sidebar-text: rgba(255,255,255,0.65);
+  --sidebar-bg: #6366f1;
+  --sidebar-text: rgba(255,255,255,0.75);
   --sidebar-text-active: #ffffff;
-  --sidebar-accent: #818cf8;
+  --sidebar-accent: rgba(255,255,255,0.9);
   --topbar-height: 60px;
 }
 
