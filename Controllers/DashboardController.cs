@@ -50,10 +50,53 @@ public class DashboardController : Controller
         ViewBag.PendingOnboarding = await _context.OnboardingTasks.CountAsync(t => !t.IsCompleted);
 
         ViewBag.UpcomingAnniversaries = persons
+            .Where(p => p.Status == "Active")
             .Where(p => {
-                var annivThis = new DateTime(now.Year, p.HireDate.Month, p.HireDate.Day);
+                int day = p.HireDate.Day;
+                if (p.HireDate.Month == 2 && p.HireDate.Day == 29 && !DateTime.IsLeapYear(now.Year))
+                {
+                    day = 28;
+                }
+                var annivThis = new DateTime(now.Year, p.HireDate.Month, day);
                 if (annivThis < now.Date) annivThis = annivThis.AddYears(1);
                 return (annivThis - now.Date).TotalDays <= 7 && p.HireDate.Year != now.Year;
+            })
+            .OrderBy(p => {
+                int day = p.HireDate.Day;
+                if (p.HireDate.Month == 2 && p.HireDate.Day == 29 && !DateTime.IsLeapYear(now.Year))
+                {
+                    day = 28;
+                }
+                var annivThis = new DateTime(now.Year, p.HireDate.Month, day);
+                if (annivThis < now.Date) annivThis = annivThis.AddYears(1);
+                return (annivThis - now.Date).TotalDays;
+            })
+            .Take(5)
+            .ToList();
+
+        ViewBag.UpcomingBirthdays = persons
+            .Where(p => p.Status == "Active" && p.BirthDate.HasValue)
+            .Where(p => {
+                var bday = p.BirthDate!.Value;
+                int day = bday.Day;
+                if (bday.Month == 2 && bday.Day == 29 && !DateTime.IsLeapYear(now.Year))
+                {
+                    day = 28;
+                }
+                var bdayThis = new DateTime(now.Year, bday.Month, day);
+                if (bdayThis < now.Date) bdayThis = bdayThis.AddYears(1);
+                return (bdayThis - now.Date).TotalDays <= 7;
+            })
+            .OrderBy(p => {
+                var bday = p.BirthDate!.Value;
+                int day = bday.Day;
+                if (bday.Month == 2 && bday.Day == 29 && !DateTime.IsLeapYear(now.Year))
+                {
+                    day = 28;
+                }
+                var bdayThis = new DateTime(now.Year, bday.Month, day);
+                if (bdayThis < now.Date) bdayThis = bdayThis.AddYears(1);
+                return (bdayThis - now.Date).TotalDays;
             })
             .Take(5)
             .ToList();

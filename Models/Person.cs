@@ -64,6 +64,32 @@ public class Person
     [StringLength(20)]
     public string Status { get; set; } = "Active";
 
+    public string? PhotoPath { get; set; }
+
+    public DateTime? BirthDate { get; set; }
+
+    public string Initials
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(FirstName) && string.IsNullOrWhiteSpace(LastName))
+                return "?";
+            var f = !string.IsNullOrWhiteSpace(FirstName) ? FirstName[0].ToString().ToUpper() : "";
+            var l = !string.IsNullOrWhiteSpace(LastName) ? LastName[0].ToString().ToUpper() : "";
+            return $"{f}{l}";
+        }
+    }
+
+    public string AvatarBgColor
+    {
+        get
+        {
+            var colors = new[] { "#6366f1", "#8b5cf6", "#06b6d4", "#10b981", "#f59e0b", "#ef4444", "#ec4899" };
+            var hash = Math.Abs(FullName.GetHashCode());
+            return colors[hash % colors.Length];
+        }
+    }
+
     public ICollection<AppAccessRole> AppAccessRoles { get; set; } = new List<AppAccessRole>();
 
     public string FullName => $"{FirstName} {LastName}";

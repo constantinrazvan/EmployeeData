@@ -117,10 +117,26 @@ public class EmployeesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("FirstName,LastName,Email,Phone,Position,DepartmentId,HireDate,Status,ContractPeriod,TerminationDate")] Person person)
+    public async Task<IActionResult> Create([Bind("FirstName,LastName,Email,Phone,Position,DepartmentId,HireDate,Status,ContractPeriod,TerminationDate,BirthDate")] Person person, IFormFile? Photo)
     {
         if (ModelState.IsValid)
         {
+            if (Photo != null && Photo.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "avatars");
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+                var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(Photo.FileName);
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await Photo.CopyToAsync(fileStream);
+                }
+                person.PhotoPath = uniqueFileName;
+            }
+
             _context.Add(person);
             await _context.SaveChangesAsync();
 
@@ -151,7 +167,7 @@ public class EmployeesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,LastName,Email,Phone,Position,DepartmentId,HireDate,Status,ContractPeriod,TerminationDate")] Person person)
+    public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,LastName,Email,Phone,Position,DepartmentId,HireDate,Status,ContractPeriod,TerminationDate,BirthDate")] Person person, IFormFile? Photo)
     {
         if (id != person.Id) return NotFound();
 
@@ -160,6 +176,40 @@ public class EmployeesController : Controller
             try
             {
                 var oldPerson = await _context.Persons.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+                
+                if (Photo != null && Photo.Length > 0)
+                {
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "avatars");
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(Photo.FileName);
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await Photo.CopyToAsync(fileStream);
+                    }
+
+                    // Delete old photo file
+                    if (oldPerson != null && !string.IsNullOrEmpty(oldPerson.PhotoPath))
+                    {
+                        var oldFilePath = Path.Combine(uploadsFolder, oldPerson.PhotoPath);
+                        if (System.IO.File.Exists(oldFilePath))
+                        {
+                            System.IO.File.Delete(oldFilePath);
+                        }
+                    }
+                    person.PhotoPath = uniqueFileName;
+                }
+                else
+                {
+                    if (oldPerson != null)
+                    {
+                        person.PhotoPath = oldPerson.PhotoPath;
+                    }
+                }
+
                 _context.Update(person);
                 await _context.SaveChangesAsync();
 
@@ -198,6 +248,15 @@ public class EmployeesController : Controller
         var person = await _context.Persons.FindAsync(id);
         if (person != null)
         {
+            if (!string.IsNullOrEmpty(person.PhotoPath))
+            {
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "avatars", person.PhotoPath);
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+            }
+
             _context.Persons.Remove(person);
             await _context.SaveChangesAsync();
             LogActivity("Delete Employee", $"Permanently deleted employee '{person.FullName}' (ID: {id}, Position: {person.Position}). All associated permissions were revoked.");

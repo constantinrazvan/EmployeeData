@@ -174,10 +174,25 @@
                     {
                         <tr>
                             <td>
-                                <a asp-action="Details" asp-route-id="@item.Id" class="fw-bold text-dark text-decoration-none">
-                                    @item.FullName
-                                </a>
-                                <span class="text-muted small d-block">Hired on: @item.HireDate.ToString("dd.MM.yyyy")</span>
+                                <div class="d-flex align-items-center gap-3">
+                                    @if (!string.IsNullOrEmpty(item.PhotoPath))
+                                    {
+                                        <img src="~/uploads/avatars/@item.PhotoPath" alt="@item.FullName" class="rounded-circle border" style="width: 42px; height: 42px; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" 
+                                             style="width: 42px; height: 42px; background-color: @item.AvatarBgColor; font-size: 14px;">
+                                            @item.Initials
+                                        </div>
+                                    }
+                                    <div>
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="fw-bold text-dark text-decoration-none d-block">
+                                            @item.FullName
+                                        </a>
+                                        <span class="text-muted small">Hired: @item.HireDate.ToString("dd.MM.yyyy")</span>
+                                    </div>
+                                </div>
                             </td>
                             <td>
                                 <span class="badge bg-secondary font-monospace">@item.Department?.Code</span>
