@@ -1,0 +1,125 @@
+@model EmployeeData.Models.Department
+
+@{
+    ViewData["Title"] = $"Department - {Model.Name}";
+}
+
+<div class="mb-4">
+    <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm rounded-3 px-3 py-2 d-inline-flex align-items-center gap-1">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Back
+    </a>
+</div>
+
+<!-- Department Header Information Card -->
+<div class="card shadow-sm border-0 bg-white text-dark p-4 mb-4 rounded-3">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge bg-secondary px-3 py-2 font-monospace fs-6 fw-bold">@Model.Code</span>
+                <h3 class="fw-bold m-0 text-dark">@Model.Name</h3>
+            </div>
+            <p class="text-muted m-0">@Model.Description</p>
+        </div>
+        <div class="bg-light p-3 rounded-3 border-0 min-w-200">
+            <span class="text-muted small d-block uppercase tracking-wider font-semibold">Department Manager</span>
+            <span class="fw-bold text-dark d-flex align-items-center gap-2 mt-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                @Model.ManagerName
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Employees List inside Department -->
+<div class="card shadow-sm border-0 bg-white text-dark p-4 rounded-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h5 class="fw-bold text-dark m-0">Assigned Personnel</h5>
+            <p class="text-muted small m-0 mt-0.5">Active and inactive employees associated with this department.</p>
+        </div>
+        <span class="badge bg-primary-subtle text-primary fs-6 px-3 py-2">
+            Total: @Model.Employees.Count employees
+        </span>
+    </div>
+
+    @if (!Model.Employees.Any())
+    {
+        <div class="text-center py-5 bg-light border border-dashed rounded-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-muted opacity-50 mb-3">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <h6 class="fw-bold text-dark">No registered employees</h6>
+            <p class="text-muted small m-0 mt-1" style="max-width: 320px; margin: 0 auto;">No persons were found registered in the @Model.Name department at this time.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle m-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Employee Name</th>
+                        <th>Position</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Hire Date</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var emp in Model.Employees.OrderBy(e => e.LastName))
+                    {
+                        <tr>
+                            <td>
+                                <span class="fw-bold text-dark d-block">@emp.FullName</span>
+                            </td>
+                            <td>@emp.Position</td>
+                            <td>
+                                <a href="mailto:@emp.Email" class="text-decoration-none">@emp.Email</a>
+                            </td>
+                            <td>@emp.Phone</td>
+                            <td>@emp.HireDate.ToString("dd.MM.yyyy")</td>
+                            <td>
+                                @if (emp.Status == "Active")
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1.5">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2.5 py-1.5">Inactive</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a asp-controller="Employees" asp-action="Details" asp-route-id="@emp.Id" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center justify-content-center p-2" title="Employee Details">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                        </svg>
+                                    </a>
+                                    <a asp-controller="Employees" asp-action="Edit" asp-route-id="@emp.Id" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center p-2" title="Edit Employee">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

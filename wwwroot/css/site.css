@@ -1,0 +1,430 @@
+/* =============================================
+   ORGPORTAL - Global Styles
+   ============================================= */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-size: 15px;
+}
+
+body {
+  background-color: #f4f6f9;
+  color: #1e293b;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* =============================================
+   SIDEBAR LAYOUT - Fixed sidebar, page scrolls
+   ============================================= */
+
+:root {
+  --sidebar-width: 248px;
+  --sidebar-bg: #1e1b4b;
+  --sidebar-text: rgba(255,255,255,0.65);
+  --sidebar-text-active: #ffffff;
+  --sidebar-accent: #818cf8;
+  --topbar-height: 60px;
+}
+
+/* ===== SIDEBAR ===== */
+.app-sidebar {
+  width: var(--sidebar-width);
+  background: var(--sidebar-bg);
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 1040;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.app-sidebar::-webkit-scrollbar { width: 3px; }
+.app-sidebar::-webkit-scrollbar-track { background: transparent; }
+.app-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+
+/* ===== CONTENT AREA - scrolls independently ===== */
+.app-content {
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== SIDEBAR LOGO ===== */
+.sidebar-logo {
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+
+.sidebar-logo-link {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  text-decoration: none;
+}
+
+.sidebar-logo-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--bs-primary, #6366f1);
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.sidebar-logo-text {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: white;
+}
+
+.sidebar-logo-accent {
+  color: var(--sidebar-accent);
+}
+
+/* ===== SIDEBAR NAV ===== */
+.sidebar-nav {
+  padding: 14px 10px;
+  flex: 1;
+}
+
+.sidebar-nav-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.28);
+  padding: 6px 10px 6px;
+  margin-top: 6px;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 10px;
+  border-radius: 7px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 1px;
+  transition: color 0.15s ease;
+}
+
+/* Hover: only text brightens, no background */
+.sidebar-nav-item:hover {
+  color: var(--sidebar-text-active);
+  text-decoration: none;
+}
+
+/* Active: bold white text only, no background, no border */
+.sidebar-nav-item.active {
+  color: var(--sidebar-text-active);
+  font-weight: 600;
+}
+
+.sidebar-nav-item svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.sidebar-nav-item:hover svg,
+.sidebar-nav-item.active svg {
+  opacity: 1;
+}
+
+/* ===== SIDEBAR FOOTER ===== */
+.sidebar-footer {
+  padding: 12px 10px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px;
+}
+
+.sidebar-user-avatar {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  background: var(--bs-primary, #6366f1);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sidebar-user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar-user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-user-role {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-logout-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: rgba(239,68,68,0.12);
+  color: #f87171;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.sidebar-logout-btn:hover {
+  background: rgba(239,68,68,0.25);
+  color: #fca5a5;
+}
+
+/* ===== TOP BAR ===== */
+.app-topbar {
+  height: var(--topbar-height);
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.topbar-page-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.topbar-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  transition: background 0.15s, color 0.15s;
+  position: relative;
+}
+
+.topbar-icon-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.topbar-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 16px;
+  height: 16px;
+  background: #ef4444;
+  color: white;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  line-height: 1;
+}
+
+.topbar-user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--bs-primary, #6366f1);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+
+.topbar-user-avatar:hover {
+  opacity: 0.85;
+}
+
+.topbar-mobile-toggle {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+}
+
+/* ===== MAIN CONTENT ===== */
+.app-main {
+  flex: 1;
+  padding: 28px;
+}
+
+/* ===== FOOTER ===== */
+.app-footer {
+  padding: 14px 28px;
+  border-top: 1px solid #e5e7eb;
+  font-size: 12px;
+  color: #9ca3af;
+  background: white;
+  flex-shrink: 0;
+}
+
+/* ===== MOBILE OVERLAY ===== */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1039;
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 767px) {
+  .app-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+  .app-sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+  .app-content {
+    margin-left: 0;
+  }
+  .app-main {
+    padding: 16px;
+  }
+  .app-topbar {
+    padding: 0 16px;
+  }
+}
+
+/* =============================================
+   BADGE COLOR OVERRIDES (Bootstrap subtle fix)
+   ============================================= */
+.badge.bg-warning-subtle  { background-color: #fef9c3 !important; color: #854d0e !important; }
+.badge.bg-danger-subtle   { background-color: #fee2e2 !important; color: #991b1b !important; }
+.badge.bg-success-subtle  { background-color: #dcfce7 !important; color: #166534 !important; }
+.badge.bg-info-subtle     { background-color: #e0f2fe !important; color: #075985 !important; }
+.badge.bg-secondary-subtle{ background-color: #f1f5f9 !important; color: #475569 !important; }
+.badge.bg-primary-subtle  { background-color: #ede9fe !important; color: #4c1d95 !important; }
+
+/* =============================================
+   SCROLLBAR
+   ============================================= */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+/* =============================================
+   AVATAR COMPONENTS
+   ============================================= */
+.avatar-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--bs-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.avatar-circle-lg {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: var(--bs-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 2rem;
+  margin: 0 auto;
+}
+
+/* Roles sidebar list */
+.sidebar-list-group {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* Cards */
+.card {
+  border-radius: 10px !important;
+}
+
+/* Print */
+@media print {
+  .app-sidebar, .app-topbar, .app-footer, .no-print { display: none !important; }
+  .app-content { margin-left: 0 !important; }
+  .app-main { padding: 0 !important; }
+}

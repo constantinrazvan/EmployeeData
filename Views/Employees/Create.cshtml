@@ -1,0 +1,93 @@
+@model EmployeeData.Models.Person
+
+@{
+    ViewData["Title"] = "Register Employee";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Back Button -->
+        <div class="mb-4">
+            <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm py-2 px-3 rounded-3 d-inline-flex align-items-center gap-2 fw-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back
+            </a>
+        </div>
+
+        <div class="card shadow-sm border-0 p-5 bg-white text-dark rounded-3">
+            <div class="mb-4 border-bottom pb-3">
+                <h3 class="fw-bold m-0 text-dark">Add New Employee</h3>
+                <p class="text-muted small m-0 mt-1">Fill in the details below to register the person within the organization.</p>
+            </div>
+
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-4"></div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label asp-for="FirstName" class="form-label text-muted small fw-medium">First Name</label>
+                        <input asp-for="FirstName" class="form-control" placeholder="e.g., John" required />
+                        <span asp-validation-for="FirstName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="LastName" class="form-label text-muted small fw-medium">Last Name</label>
+                        <input asp-for="LastName" class="form-control" placeholder="e.g., Doe" required />
+                        <span asp-validation-for="LastName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label text-muted small fw-medium">Email Address</label>
+                        <input asp-for="Email" type="email" class="form-control" placeholder="john.doe@organization.com" required />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Phone" class="form-label text-muted small fw-medium">Phone Number</label>
+                        <input asp-for="Phone" class="form-control" placeholder="e.g., 0722111222" required />
+                        <span asp-validation-for="Phone" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Position" class="form-label text-muted small fw-medium">Position / Role</label>
+                        <input asp-for="Position" class="form-control" placeholder="e.g., Software Developer" required />
+                        <span asp-validation-for="Position" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="DepartmentId" class="form-label text-muted small fw-medium">Assigned Department</label>
+                        <select asp-for="DepartmentId" class="form-select" asp-items="ViewBag.DepartmentId" required></select>
+                        <span asp-validation-for="DepartmentId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="HireDate" class="form-label text-muted small fw-medium">Hire Date</label>
+                        <input asp-for="HireDate" type="date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                        <span asp-validation-for="HireDate" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Status" class="form-label text-muted small fw-medium">Initial Status</label>
+                        <select asp-for="Status" class="form-select">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mt-5 d-flex gap-3 justify-content-end">
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary px-4 py-2.5 rounded-3 fw-semibold">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-5 py-2.5 rounded-3 fw-semibold">Register Employee</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

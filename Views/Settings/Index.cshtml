@@ -1,0 +1,434 @@
+@model EmployeeData.Models.SystemSettings
+
+@{
+    ViewData["Title"] = "System Settings";
+}
+
+<div class="mb-4 border-bottom pb-3">
+    <h3 class="fw-bold text-dark mb-1">Portal Administration Settings</h3>
+    <p class="text-muted small m-0">Configure the database connection, SMTP server, and automatic email templates sent to employees.</p>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success py-2.5 px-3 mb-4 rounded-3 d-flex align-items-center gap-2 shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span class="small fw-medium">@TempData["Success"]</span>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger py-2.5 px-3 mb-4 rounded-3 d-flex align-items-center gap-2 shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span class="small fw-medium">@TempData["Error"]</span>
+    </div>
+}
+
+<!-- Hidden Form for Database Migrations -->
+<form asp-action="RunMigrations" method="post" id="migrationsForm" onsubmit="return confirm('WARNING! This action will completely wipe all current data in the database and reload the default seed data. Are you sure you want to continue?');">
+    @Html.AntiForgeryToken()
+</form>
+
+<form asp-action="SaveSettings" method="post" id="mainSettingsForm">
+    @Html.AntiForgeryToken()
+
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs border-bottom mb-4" id="settingsTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-semibold py-2.5 d-flex align-items-center gap-2" id="database-tab" data-bs-toggle="tab" data-bs-target="#database-pane" type="button" role="tab" aria-controls="database-pane" aria-selected="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+                    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                    <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"></path>
+                </svg>
+                Database Connection
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-semibold py-2.5 d-flex align-items-center gap-2" id="smtp-tab" data-bs-toggle="tab" data-bs-target="#smtp-pane" type="button" role="tab" aria-controls="smtp-pane" aria-selected="false">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                    <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+                Notification SMTP Server
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-semibold py-2.5 d-flex align-items-center gap-2" id="templates-tab" data-bs-toggle="tab" data-bs-target="#templates-pane" type="button" role="tab" aria-controls="templates-pane" aria-selected="false">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                Email Templates
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Contents -->
+    <div class="tab-content" id="settingsTabContent">
+        <!-- Tab 1: Database Settings -->
+        <div class="tab-pane fade show active" id="database-pane" role="tabpanel" aria-labelledby="database-tab" tabindex="0">
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <div class="card shadow-sm border-0 p-4 bg-white text-dark rounded-3 mb-4">
+                        <h5 class="fw-bold mb-3 text-dark">Configure Database Provider</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-medium">Database Provider</label>
+                            <select name="Database.Provider" id="dbProviderSelect" class="form-select" required>
+                                <option value="SQLite" selected="@(Model.Database.Provider == "SQLite" ? "selected" : null)">SQLite (Serverless File)</option>
+                                <option value="PostgreSQL" selected="@(Model.Database.Provider == "PostgreSQL" ? "selected" : null)">PostgreSQL</option>
+                                <option value="SqlServer" selected="@(Model.Database.Provider == "SqlServer" ? "selected" : null)">SQL Server (MSSQL)</option>
+                                <option value="MySQL" selected="@(Model.Database.Provider == "MySQL" ? "selected" : null)">MySQL / MariaDB</option>
+                            </select>
+                            <div class="form-text small text-muted">
+                                Select the database engine you want the application to use.
+                            </div>
+                        </div>
+
+                        <!-- SQLite specific field -->
+                        <div class="mb-3" id="sqliteFields">
+                            <label class="form-label text-muted small fw-medium">SQLite File (Path/Name)</label>
+                            <input type="text" name="Database.DbPath" value="@Model.Database.DbPath" class="form-control" placeholder="e.g., EmployeeData.db" />
+                            <div class="form-text small text-muted">
+                                Can be a relative or absolute path (Default: <code>EmployeeData.db</code>).
+                            </div>
+                        </div>
+
+                        <!-- Structured fields for PostgreSQL, MSSQL, MySQL -->
+                        <div id="connStrFields" style="display:none;" class="mb-3">
+                            <div class="row g-3">
+                                <div class="col-md-8">
+                                    <label class="form-label text-muted small fw-medium">Server / Host</label>
+                                    <input type="text" name="Database.Server" id="dbServerInput" value="@Model.Database.Server" class="form-control bg-white" placeholder="e.g., localhost or 12.34.56.78" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label text-muted small fw-medium">Port</label>
+                                    <input type="number" name="Database.Port" id="dbPortInput" value="@Model.Database.Port" class="form-control bg-white" />
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label text-muted small fw-medium">Database Name</label>
+                                    <input type="text" name="Database.DatabaseName" value="@Model.Database.DatabaseName" class="form-control bg-white" placeholder="e.g., EmployeeDataDb" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-medium">Username</label>
+                                    <input type="text" name="Database.Username" value="@Model.Database.Username" class="form-control bg-white" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-medium">Password</label>
+                                    <input type="password" name="Database.Password" value="@Model.Database.Password" class="form-control bg-white" autocomplete="new-password" />
+                                </div>
+                            </div>
+                            <div class="form-text small text-muted mt-2">
+                                The values entered here are used to construct the secure connection string dynamically.
+                            </div>
+                        </div>
+
+                        <div class="bg-light p-3 rounded-3 border-0 small text-muted mb-3">
+                            <span class="fw-bold d-block text-dark mb-1">Calculated connection string at startup:</span>
+                            <span class="font-monospace text-xs text-primary">@EmployeeData.Helpers.SettingsService.GetConnectionString()</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <!-- Maintenance Card -->
+                    <div class="card shadow-sm border-0 p-4 bg-white text-dark rounded-3 border-start border-danger border-4 mb-4">
+                        <h5 class="fw-bold mb-2 text-danger d-flex align-items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                            Database Seeding & Reset
+                        </h5>
+                        <p class="text-muted small mb-3">
+                            This action will <strong>completely wipe the existing schema</strong> in the selected database, recreate it according to the current models, and populate it with the full set of default seed data (users, departments, employees, audit logs).
+                        </p>
+                        
+                        <button type="submit" form="migrationsForm" class="btn btn-danger w-100 py-2.5 fw-semibold rounded-3 shadow-sm d-flex align-items-center justify-content-center gap-2">
+                            Wipe, Recreate & Seed Database
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: SMTP Settings -->
+        <div class="tab-pane fade" id="smtp-pane" role="tabpanel" aria-labelledby="smtp-tab" tabindex="0">
+            <div class="card shadow-sm border-0 p-4 bg-white text-dark rounded-3 max-w-700">
+                <h5 class="fw-bold mb-3 text-dark">SMTP Server Configuration (Notification Delivery)</h5>
+                
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label class="form-label text-muted small fw-medium">SMTP Server Host</label>
+                        <input type="text" name="Smtp.Host" value="@Model.Smtp.Host" class="form-control" placeholder="smtp.mailtrap.io or localhost" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-muted small fw-medium">Port</label>
+                        <input type="number" name="Smtp.Port" value="@Model.Smtp.Port" class="form-control" placeholder="587" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small fw-medium">Username</label>
+                        <input type="text" name="Smtp.Username" value="@Model.Smtp.Username" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small fw-medium">Password</label>
+                        <input type="password" name="Smtp.Password" value="@Model.Smtp.Password" class="form-control" autocomplete="new-password" />
+                    </div>
+
+                    <div class="col-12 my-2">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="Smtp.EnableSsl" value="true" id="enableSslSwitch" @(Model.Smtp.EnableSsl ? "checked" : "") />
+                            <input type="hidden" name="Smtp.EnableSsl" value="false" />
+                            <label class="form-check-label text-muted small fw-medium" for="enableSslSwitch">Enable SSL/TLS Encryption</label>
+                        </div>
+                    </div>
+
+                    <hr class="my-2" />
+
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small fw-medium">Sender Email (From Email)</label>
+                        <input type="email" name="Smtp.FromEmail" value="@Model.Smtp.FromEmail" class="form-control" placeholder="noreply@organization.com" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small fw-medium">Sender Name (From Name)</label>
+                        <input type="text" name="Smtp.FromName" value="@Model.Smtp.FromName" class="form-control" placeholder="Organization Portal" required />
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+                    <div class="text-muted small">
+                        Please verify SMTP credentials are correct before saving.
+                    </div>
+                    <button type="button" id="btnTestSmtp" class="btn btn-outline-secondary fw-semibold px-4 py-2 d-flex align-items-center justify-content-center gap-2 rounded-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        Test Connection
+                    </button>
+                </div>
+                <div id="smtpTestResult" class="mt-3" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Email Templates -->
+        <div class="tab-pane fade" id="templates-pane" role="tabpanel" aria-labelledby="templates-tab" tabindex="0">
+            <div class="card shadow-sm border-0 p-4 bg-white text-dark rounded-3">
+                <h5 class="fw-bold mb-2 text-dark">Email & Notification Templates</h5>
+                <p class="text-muted small mb-4">Personalize the email notifications sent to employees when rights are granted or revoked. Click on any placeholder from the list to quickly insert it into the active field.</p>
+                
+                <!-- Quick Variables Badge Bar -->
+                <div class="bg-light p-3 rounded-3 border-0 small text-muted mb-4">
+                    <span class="fw-bold text-dark d-block mb-2 text-uppercase text-xs tracking-wider">Dynamic placeholders (Click to insert):</span>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-outline-primary btn-xs py-1.5 px-3 rounded-pill param-badge font-monospace text-xs" data-param="{EmployeeName}">{EmployeeName}</button>
+                        <button type="button" class="btn btn-outline-primary btn-xs py-1.5 px-3 rounded-pill param-badge font-monospace text-xs" data-param="{AppName}">{AppName}</button>
+                        <button type="button" class="btn btn-outline-primary btn-xs py-1.5 px-3 rounded-pill param-badge font-monospace text-xs" data-param="{RoleName}">{RoleName}</button>
+                        <button type="button" class="btn btn-outline-primary btn-xs py-1.5 px-3 rounded-pill param-badge font-monospace text-xs" data-param="{GrantedBy}">{GrantedBy}</button>
+                        <button type="button" class="btn btn-outline-primary btn-xs py-1.5 px-3 rounded-pill param-badge font-monospace text-xs" data-param="{AppUrl}">{AppUrl}</button>
+                        <button type="button" class="btn btn-outline-primary btn-xs py-1.5 px-3 rounded-pill param-badge font-monospace text-xs" data-param="{FromName}">{FromName}</button>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    @for (int i = 0; i < Model.Templates.Count; i++)
+                    {
+                        <div class="col-lg-6">
+                            <div class="card bg-light border-0 p-4 rounded-3 h-100">
+                                <input type="hidden" name="Templates[@i].Id" value="@Model.Templates[i].Id" />
+                                <input type="hidden" name="Templates[@i].Name" value="@Model.Templates[i].Name" />
+
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="fw-bold text-dark fs-6">@Model.Templates[i].Name</span>
+                                    <span class="badge bg-secondary font-monospace text-xs">ID: @Model.Templates[i].Id</span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label text-muted small fw-medium">Email Subject</label>
+                                    <input type="text" name="Templates[@i].Subject" value="@Model.Templates[i].Subject" class="form-control bg-white" required />
+                                </div>
+
+                                <div>
+                                    <label class="form-label text-muted small fw-medium">Email Body (Content)</label>
+                                    <textarea name="Templates[@i].Body" class="form-control bg-white font-monospace text-sm" rows="8" required>@Model.Templates[i].Body</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Settings Footer -->
+    <div class="mt-4 pt-3 border-top d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary px-5 py-2.5 fw-bold rounded-3 shadow-sm d-flex align-items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            Save All Settings
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        // Toggle active fields depending on provider and auto-fill default ports
+        function toggleDbFields() {
+            var provider = document.getElementById("dbProviderSelect").value;
+            var sqliteDiv = document.getElementById("sqliteFields");
+            var connStrDiv = document.getElementById("connStrFields");
+            var portInput = document.getElementById("dbPortInput");
+
+            if (provider === "SQLite") {
+                sqliteDiv.style.display = "block";
+                connStrDiv.style.display = "none";
+            } else {
+                sqliteDiv.style.display = "none";
+                connStrDiv.style.display = "block";
+                
+                // Auto-fill standard ports if empty or set to defaults
+                if (provider === "PostgreSQL") {
+                    if (portInput.value === "" || portInput.value === "0" || portInput.value === "1433" || portInput.value === "3306") {
+                        portInput.value = "5432";
+                    }
+                } else if (provider === "SqlServer") {
+                    if (portInput.value === "" || portInput.value === "0" || portInput.value === "5432" || portInput.value === "3306") {
+                        portInput.value = "1433";
+                    }
+                } else if (provider === "MySQL") {
+                    if (portInput.value === "" || portInput.value === "0" || portInput.value === "5432" || portInput.value === "1433") {
+                        portInput.value = "3306";
+                    }
+                }
+            }
+        }
+
+        let lastFocusedElement = null;
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Initial toggle
+            toggleDbFields();
+            
+            // Event listener for provider change
+            document.getElementById("dbProviderSelect").addEventListener("change", toggleDbFields);
+
+            // Click variable badge insertion logic
+            const inputs = document.querySelectorAll("#mainSettingsForm input[type='text'], #mainSettingsForm textarea");
+            inputs.forEach(input => {
+                input.addEventListener("focus", function() {
+                    lastFocusedElement = this;
+                });
+            });
+            
+            const badges = document.querySelectorAll(".param-badge");
+            badges.forEach(badge => {
+                badge.addEventListener("click", function() {
+                    const param = this.getAttribute("data-param");
+                    if (lastFocusedElement) {
+                        const start = lastFocusedElement.selectionStart;
+                        const end = lastFocusedElement.selectionEnd;
+                        const val = lastFocusedElement.value;
+                        lastFocusedElement.value = val.substring(0, start) + param + val.substring(end);
+                        
+                        // Reposition focus and cursor
+                        lastFocusedElement.focus();
+                        lastFocusedElement.selectionStart = lastFocusedElement.selectionEnd = start + param.length;
+                    } else {
+                        alert("Please select a text field (Subject or Body) first where you want to insert the variable.");
+                    }
+                });
+            });
+
+            // SMTP Connection Test AJAX
+            const btnTestSmtp = document.getElementById("btnTestSmtp");
+            if (btnTestSmtp) {
+                btnTestSmtp.addEventListener("click", function() {
+                    var btn = this;
+                    var originalText = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Testing...';
+                    
+                    var resultDiv = document.getElementById("smtpTestResult");
+                    resultDiv.style.display = "none";
+                    resultDiv.className = "mt-3";
+
+                    var form = document.getElementById("mainSettingsForm");
+                    var token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                    var formData = new URLSearchParams();
+                    formData.append("__RequestVerificationToken", token);
+                    formData.append("host", form.querySelector('input[name="Smtp.Host"]').value);
+                    formData.append("port", form.querySelector('input[name="Smtp.Port"]').value);
+                    formData.append("username", form.querySelector('input[name="Smtp.Username"]').value);
+                    formData.append("password", form.querySelector('input[name="Smtp.Password"]').value);
+                    
+                    var sslSwitch = form.querySelector('input[id="enableSslSwitch"]');
+                    formData.append("enableSsl", sslSwitch ? sslSwitch.checked : false);
+                    formData.append("fromEmail", form.querySelector('input[name="Smtp.FromEmail"]').value);
+
+                    fetch('/Settings/TestSmtpConnection', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: formData.toString()
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                        resultDiv.style.display = "block";
+                        if (data.success) {
+                            resultDiv.className = "mt-3 alert alert-success d-flex align-items-center gap-2 rounded-3 py-2.5 px-3 shadow-sm";
+                            resultDiv.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><polyline points="20 6 9 17 4 12"></polyline></svg><span class="small fw-semibold">' + data.message + '</span>';
+                        } else {
+                            resultDiv.className = "mt-3 alert alert-danger d-flex align-items-center gap-2 rounded-3 py-2.5 px-3 shadow-sm";
+                            resultDiv.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg><span class="small fw-semibold">' + data.message + '</span>';
+                        }
+                    })
+                    .catch(error => {
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                        resultDiv.style.display = "block";
+                        resultDiv.className = "mt-3 alert alert-danger d-flex align-items-center gap-2 rounded-3 py-2.5 px-3 shadow-sm";
+                        resultDiv.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg><span class="small fw-semibold">Web server connection error.</span>';
+                    });
+                });
+            }
+
+            // Keep current tab active on page reload/form submit
+            var hash = window.location.hash;
+            if (hash) {
+                var triggerEl = document.querySelector('button[data-bs-target="' + hash + '"]');
+                if (triggerEl) {
+                    var tab = new bootstrap.Tab(triggerEl);
+                    tab.show();
+                }
+            }
+
+            var triggerTabList = [].slice.call(document.querySelectorAll('#settingsTab button'))
+            triggerTabList.forEach(function (triggerEl) {
+                triggerEl.addEventListener('click', function (event) {
+                    var target = event.target.getAttribute('data-bs-target');
+                    window.location.hash = target;
+                })
+            })
+        });
+    </script>
+}
+

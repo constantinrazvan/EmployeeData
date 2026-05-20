@@ -1,0 +1,669 @@
+@model EmployeeData.Models.Person
+@using EmployeeData.Helpers
+
+@{
+    ViewData["Title"] = "Access Control & Roles";
+    var employees = ViewBag.Employees as IEnumerable<EmployeeData.Models.Person> ?? new List<EmployeeData.Models.Person>();
+    var pagedEmployees = ViewBag.PagedEmployees as PagedResult<EmployeeData.Models.Person> ?? new PagedResult<EmployeeData.Models.Person>();
+    var applications = ViewBag.Applications as IEnumerable<EmployeeData.Models.Application> ?? new List<EmployeeData.Models.Application>();
+    var activeTab = ViewBag.ActiveTab as string ?? "matrix";
+}
+
+<!-- Top Heading -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-1">Role Management & Access Control</h3>
+        <p class="text-muted small m-0">Manage personnel access accounts in corporate applications and administer the enterprise application directory.</p>
+    </div>
+</div>
+
+<!-- Alert status feeds -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success py-2.5 px-3 mb-4 rounded-3 d-flex align-items-center gap-2 shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span class="small fw-medium">@TempData["Success"]</span>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger py-2.5 px-3 mb-4 rounded-3 d-flex align-items-center gap-2 shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span class="small fw-medium">@TempData["Error"]</span>
+    </div>
+}
+
+<!-- Navigation Tabs -->
+<ul class="nav nav-tabs mb-4" id="rolesTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(activeTab == "matrix" ? "active fw-bold text-primary" : "text-muted")" id="matrix-tab" data-bs-toggle="tab" data-bs-target="#matrix" type="button" role="tab" aria-controls="matrix" aria-selected="@(activeTab == "matrix" ? "true" : "false")">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                <rect x="3" y="3" width="7" height="9"></rect>
+                <rect x="14" y="3" width="7" height="5"></rect>
+                <rect x="14" y="12" width="7" height="9"></rect>
+                <rect x="3" y="16" width="7" height="5"></rect>
+            </svg>
+            Global Access Matrix
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(activeTab == "individual" ? "active fw-bold text-primary" : "text-muted")" id="individual-tab" data-bs-toggle="tab" data-bs-target="#individual" type="button" role="tab" aria-controls="individual" aria-selected="@(activeTab == "individual" ? "true" : "false")">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            Employee Allocation
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(activeTab == "applications" ? "active fw-bold text-primary" : "text-muted")" id="applications-tab" data-bs-toggle="tab" data-bs-target="#applications" type="button" role="tab" aria-controls="applications" aria-selected="@(activeTab == "applications" ? "true" : "false")">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+            Corporate Applications
+        </button>
+    </li>
+</ul>
+
+<!-- Tabs Contents -->
+<div class="tab-content" id="rolesTabContent">
+
+    <!-- Tab 1: Global Access Matrix -->
+    <div class="tab-pane fade @(activeTab == "matrix" ? "show active" : "")" id="matrix" role="tabpanel" aria-labelledby="matrix-tab">
+        <div class="card shadow-sm border-0 p-4 bg-white text-dark rounded-3">
+            <h5 class="fw-bold mb-3">Audit Table & Permission Matrix</h5>
+            <p class="text-muted small mb-4">Global overview of all organization employees and their active application access roles.</p>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle border">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="py-3 px-3">Employee</th>
+                            <th class="py-3">Department</th>
+                            @foreach (var app in applications)
+                            {
+                                <th class="text-center py-3 font-monospace small">@app.Name</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var emp in pagedEmployees.Items)
+                        {
+                            <tr>
+                                <td class="px-3 py-2.5">
+                                    <span class="fw-bold text-dark d-block">@emp.FullName</span>
+                                    <span class="text-muted small">@emp.Position</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">@emp.Department?.Code</span>
+                                </td>
+                                @foreach (var app in applications)
+                                {
+                                    var activeRole = emp.AppAccessRoles.FirstOrDefault(r => r.ApplicationId == app.Id);
+                                    <td class="text-center py-2">
+                                        @if (activeRole != null)
+                                        {
+                                            <div class="d-inline-flex flex-column align-items-center bg-success-subtle border border-success-subtle text-success p-1 px-2.5 rounded-3">
+                                                <span class="font-monospace fw-bold small text-uppercase">@activeRole.RoleName</span>
+                                                <form asp-action="Revoke" method="post" class="mt-1" onsubmit="return confirm('Are you sure you want to revoke the @activeRole.RoleName role of @emp.FullName from the @app.Name application?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@activeRole.Id" />
+                                                    <input type="hidden" name="sourceTab" value="matrix" />
+                                                    <button type="submit" class="btn btn-link text-danger p-0 m-0 border-0 fs-7 text-decoration-none" title="Revoke Rights">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                                        </svg>
+                                                        Revoke
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <a asp-action="Index" asp-route-personId="@emp.Id" asp-route-activeTab="individual" class="btn btn-light btn-sm text-muted rounded-circle d-inline-flex align-items-center justify-content-center p-1.5" style="width: 28px; height: 28px;" title="Grant Access">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                                </svg>
+                                            </a>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Section for Matrix -->
+            <nav aria-label="Pagination" class="d-flex justify-content-between align-items-center mt-4">
+                <div class="small text-muted">
+                    Showing @pagedEmployees.StartIndex to @pagedEmployees.EndIndex of @pagedEmployees.TotalCount employees
+                </div>
+                <ul class="pagination mb-0">
+                    @if (pagedEmployees.HasPreviousPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index" 
+                               asp-route-pageNumber="1"
+                               asp-route-activeTab="matrix"
+                               title="First Page">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="15 18 9 12 15 6"></polyline>
+                                    <polyline points="9 18 3 12 9 6"></polyline>
+                                </svg>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-pageNumber="@(pagedEmployees.PageNumber - 1)"
+                               asp-route-activeTab="matrix">
+                                Previous
+                            </a>
+                        </li>
+                    }
+
+                    @{
+                        int startPage = Math.Max(1, pagedEmployees.PageNumber - 2);
+                        int endPage = Math.Min(pagedEmployees.TotalPages, pagedEmployees.PageNumber + 2);
+                    }
+
+                    @if (startPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-pageNumber="1"
+                               asp-route-activeTab="matrix">
+                                1
+                            </a>
+                        </li>
+                        @if (startPage > 2)
+                        {
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        }
+                    }
+
+                    @for (int i = startPage; i <= endPage; i++)
+                    {
+                        @if (i == pagedEmployees.PageNumber)
+                        {
+                            <li class="page-item active"><span class="page-link">@i</span></li>
+                        }
+                        else
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index"
+                                   asp-route-pageNumber="@i"
+                                   asp-route-activeTab="matrix">
+                                    @i
+                                </a>
+                            </li>
+                        }
+                    }
+
+                    @if (endPage < pagedEmployees.TotalPages)
+                    {
+                        @if (endPage < pagedEmployees.TotalPages - 1)
+                        {
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        }
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-pageNumber="@pagedEmployees.TotalPages"
+                               asp-route-activeTab="matrix">
+                                @pagedEmployees.TotalPages
+                            </a>
+                        </li>
+                    }
+
+                    @if (pagedEmployees.HasNextPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-pageNumber="@(pagedEmployees.PageNumber + 1)"
+                               asp-route-activeTab="matrix">
+                                Next
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-pageNumber="@pagedEmployees.TotalPages"
+                               asp-route-activeTab="matrix"
+                               title="Last Page">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                    <polyline points="15 18 21 12 15 6"></polyline>
+                                </svg>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Tab 2: Individual Allocation (Original Sidebar layout upgraded) -->
+    <div class="tab-pane fade @(activeTab == "individual" ? "show active" : "")" id="individual" role="tabpanel" aria-labelledby="individual-tab">
+        <div class="row g-4">
+            <!-- Sidebar: Employee List -->
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 p-4 bg-white text-dark d-flex flex-column" style="max-height: 75vh;">
+                    <div class="mb-3">
+                        <h5 class="fw-bold m-0 text-dark">Organization Personnel</h5>
+                        <p class="text-muted small m-0 mt-0.5">Select an employee to manage their access rights.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <input type="text" id="sidebarSearch" class="form-control py-2" placeholder="Search list..." onkeyup="filterSidebar()" />
+                    </div>
+
+                    <div class="sidebar-list overflow-auto flex-fill pe-1" id="employeeSidebarList" style="scrollbar-width: thin;">
+                        <div class="list-group">
+                            @foreach (var emp in employees)
+                            {
+                                var isSelected = ViewBag.SelectedPersonId == emp.Id;
+                                <a asp-action="Index" asp-route-personId="@emp.Id" asp-route-activeTab="individual" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between p-3 rounded-3 mb-2 border-0 @(isSelected ? "bg-primary text-white" : "bg-light text-dark")">
+                                    <div>
+                                        <span class="d-block fw-bold employee-name @(isSelected ? "text-white" : "text-dark")">@emp.FullName</span>
+                                        <span class="employee-position small d-block @(isSelected ? "text-white-50" : "text-muted")">@emp.Position</span>
+                                    </div>
+                                    <span class="badge @(isSelected ? "bg-white text-primary" : "bg-secondary") font-monospace">@emp.Department?.Code</span>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail panel for Selected Employee -->
+            <div class="col-md-8">
+                @if (Model == null)
+                {
+                    <div class="card shadow-sm border-0 p-5 bg-white text-dark text-center h-100 d-flex flex-column align-items-center justify-content-center py-5 rounded-3">
+                        <div class="p-4 bg-primary-subtle text-primary rounded-circle mb-4 d-inline-flex" style="width: 80px; height: 80px; align-items: center; justify-content: center;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                        </div>
+                        <h4 class="fw-bold">No employee selected</h4>
+                        <p class="text-muted small mt-2" style="max-width: 480px;">Select an employee from the list on the left to view their current application access, grant new permissions, or revoke access rights.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="card shadow-sm border-0 p-5 bg-white text-dark h-100 d-flex flex-column justify-content-between rounded-3">
+                        <div>
+                            <!-- Selected Employee Header -->
+                            <div class="d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
+                                <div>
+                                    <span class="text-muted small d-block">Manage Application Access</span>
+                                    <h3 class="fw-bold text-dark m-0">@Model.FullName</h3>
+                                    <div class="d-flex align-items-center gap-2 mt-2">
+                                        <span class="badge bg-secondary font-monospace">@Model.Department?.Code</span>
+                                        <span class="text-muted small fw-medium">@Model.Position</span>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <span class="text-muted small d-block">Status</span>
+                                    @if (Model.Status == "Active")
+                                    {
+                                        <span class="badge bg-success-subtle text-success px-2.5 py-1.5 border border-success-subtle">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger px-2.5 py-1.5 border border-danger-subtle">Inactive</span>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Authorized Application List -->
+                            <div class="mb-5">
+                                <h5 class="fw-bold mb-3 text-dark">Currently Authorized Applications (@Model.AppAccessRoles.Count)</h5>
+                                
+                                @if (!Model.AppAccessRoles.Any())
+                                {
+                                    <div class="text-center py-4 bg-light border border-dashed rounded-3 mb-4">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-muted opacity-50 mb-2">
+                                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                        </svg>
+                                        <p class="text-muted small m-0">No access role assigned to this employee.</p>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover align-middle m-0 border">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Application</th>
+                                                    <th>Access Role</th>
+                                                    <th>Granted By</th>
+                                                    <th class="text-end">Revoke</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var role in Model.AppAccessRoles)
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            <span class="text-dark fw-bold d-block">@role.Application?.Name</span>
+                                                            <a href="@role.Application?.Url" target="_blank" class="text-muted small font-monospace text-decoration-none">@role.Application?.Url</a>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge bg-success-subtle text-success px-2.5 py-1.5 border border-success-subtle font-monospace text-uppercase">@role.RoleName</span>
+                                                        </td>
+                                                        <td>
+                                                            <span class="text-dark small d-block">@@@role.GrantedBy</span>
+                                                            <span class="text-muted small">@role.GrantedAt.ToString("MM/dd/yyyy")</span>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <form asp-action="Revoke" method="post" onsubmit="return confirm('Are you sure you want to revoke access to this application?');">
+                                                                @Html.AntiForgeryToken()
+                                                                <input type="hidden" name="id" value="@role.Id" />
+                                                                <input type="hidden" name="sourceTab" value="individual" />
+                                                                <button type="submit" class="btn btn-outline-danger btn-sm p-2 d-inline-flex align-items-center justify-content-center" title="Revoke Access Rights">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <circle cx="12" cy="12" r="10"></circle>
+                                                                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                                                                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                                                                    </svg>
+                                                                </button>
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Grant new application access panel with standardized dropdown + manual fallback -->
+                        <div class="card p-4 rounded-3 bg-light border-0 mt-auto">
+                            <h5 class="fw-bold mb-3 text-primary small text-uppercase tracking-wider">Authorize Access to New Application</h5>
+                            
+                            @if (ViewBag.AvailableApplications == null || !(ViewBag.AvailableApplications as SelectList)?.Any() == true)
+                            {
+                                <p class="text-muted small m-0">The employee already has access to all registered applications in the organization.</p>
+                            }
+                            else
+                            {
+                                <form asp-action="Grant" method="post" class="row g-3 align-items-end" id="grantRoleForm">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="personId" value="@Model.Id" />
+                                    
+                                    <div class="col-md-4">
+                                        <label class="form-label text-muted small fw-medium">Select Application</label>
+                                        <select name="applicationId" class="form-select" asp-items="ViewBag.AvailableApplications" required></select>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
+                                        <label class="form-label text-muted small fw-medium">Choose Standard Role</label>
+                                        <select id="standardRoleSelect" class="form-select" onchange="onRoleDropdownChange(this)">
+                                            <option value="User">User</option>
+                                            <option value="Developer">Developer</option>
+                                            <option value="Administrator">Administrator</option>
+                                            <option value="Editor">Editor</option>
+                                            <option value="QA Specialist">QA Specialist</option>
+                                            <option value="Manager">Manager</option>
+                                            <option value="Other...">Other / Custom Role...</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-md-3">
+                                        <label class="form-label text-muted small fw-medium">Final Access Role</label>
+                                        <input type="text" id="finalRoleNameInput" name="roleName" value="User" readonly class="form-control bg-white" required />
+                                        <input type="text" id="customRoleNameInput" name="customRoleName" class="form-control mt-2 d-none" placeholder="Type the desired role..." />
+                                    </div>
+                                    
+                                    <div class="col-md-2">
+                                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                                            Grant
+                                        </button>
+                                    </div>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 3: Corporate Applications Manager -->
+    <div class="tab-pane fade @(activeTab == "applications" ? "show active" : "")" id="applications" role="tabpanel" aria-labelledby="applications-tab">
+        <div class="card shadow-sm border-0 p-4 bg-white text-dark rounded-3">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h5 class="fw-bold text-dark m-0">Enterprise Applications Directory</h5>
+                    <p class="text-muted small m-0 mt-0.5">Define internal systems and servers where users can receive access roles.</p>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm px-3 py-2 fw-semibold d-flex align-items-center gap-1 rounded-3" data-bs-toggle="modal" data-bs-target="#createAppModal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Add Application
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle border">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="py-3 px-3">System Name</th>
+                            <th class="py-3">Integration URL</th>
+                            <th class="py-3">Description</th>
+                            <th class="py-3 text-center">Active Users</th>
+                            <th class="py-3 text-end px-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!applications.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    No enterprise applications configured at the moment. Click Add Application to begin.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var app in applications)
+                            {
+                                <tr>
+                                    <td class="fw-bold text-dark px-3">@app.Name</td>
+                                    <td class="font-monospace text-xs"><a href="@app.Url" target="_blank" class="text-decoration-none">@app.Url</a></td>
+                                    <td class="small text-muted" style="max-width: 300px;">@app.Description</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5">
+                                            @app.AppAccessRoles.Count users
+                                        </span>
+                                    </td>
+                                    <td class="text-end px-3">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm p-2 d-inline-flex align-items-center justify-content-center" 
+                                                    data-bs-toggle="modal" data-bs-target="#editAppModal" 
+                                                    data-id="@app.Id" data-name="@app.Name" data-desc="@app.Description" data-url="@app.Url"
+                                                    title="Edit Details">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                            </button>
+                                            <form asp-action="DeleteApplication" method="post" onsubmit="return confirm('WARNING! Deleting the @app.Name application will automatically delete all @app.AppAccessRoles.Count access roles assigned to users. Are you sure you want to continue?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@app.Id" />
+                                                <button type="submit" class="btn btn-outline-danger btn-sm p-2 d-inline-flex align-items-center justify-content-center" title="Delete Application">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================== -->
+<!-- MODALS FOR APPLICATIONS MANAGEMENT (TAB 3) -->
+<!-- ============================================== -->
+
+<!-- Modal: Create Application -->
+<div class="modal fade" id="createAppModal" tabindex="-1" aria-labelledby="createAppModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered text-dark">
+        <div class="modal-content border-0 shadow rounded-3 bg-white">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold text-dark" id="createAppModalLabel">Register New Application</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="CreateApplication" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium">Application Name</label>
+                        <input type="text" name="name" class="form-control" placeholder="e.g., GitLab Workspace, Confluence" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium">Integration URL</label>
+                        <input type="url" name="url" class="form-control" placeholder="https://system.organization.local" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium">Description (Role & Utility)</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Brief description of the corporate application purpose..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-top bg-light">
+                    <button type="button" class="btn btn-secondary px-3 py-2" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4 py-2 fw-semibold">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Edit Application -->
+<div class="modal fade" id="editAppModal" tabindex="-1" aria-labelledby="editAppModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered text-dark">
+        <div class="modal-content border-0 shadow rounded-3 bg-white">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold text-dark" id="editAppModalLabel">Modify Corporate Application</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="EditApplication" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" id="editAppId" />
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium">Application Name</label>
+                        <input type="text" name="name" id="editAppName" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium">Integration URL</label>
+                        <input type="url" name="url" id="editAppUrl" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium">Description (Role & Utility)</label>
+                        <textarea name="description" id="editAppDesc" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-top bg-light">
+                    <button type="button" class="btn btn-secondary px-3 py-2" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4 py-2 fw-semibold">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Filters the employee list in Tab 2 sidebar
+        function filterSidebar() {
+            const searchValue = document.getElementById('sidebarSearch').value.toLowerCase();
+            const sidebarItems = document.querySelectorAll('#employeeSidebarList .list-group-item');
+            
+            sidebarItems.forEach(item => {
+                const name = item.querySelector('.employee-name').textContent.toLowerCase();
+                const position = item.querySelector('.employee-position').textContent.toLowerCase();
+                
+                if (name.includes(searchValue) || position.includes(searchValue)) {
+                    item.style.setProperty('display', 'flex', 'important');
+                } else {
+                    item.style.setProperty('display', 'none', 'important');
+                }
+            });
+        }
+
+        // Handles standard roles dropdown selection to toggle custom text field
+        function onRoleDropdownChange(selectElement) {
+            const finalInput = document.getElementById('finalRoleNameInput');
+            const customInput = document.getElementById('customRoleNameInput');
+            
+            if (selectElement.value === "Other...") {
+                finalInput.value = "";
+                finalInput.classList.add('d-none');
+                
+                customInput.classList.remove('d-none');
+                customInput.focus();
+                customInput.required = true;
+                
+                // Track typing in custom role field to update standard role validation
+                customInput.addEventListener('input', updateFinalRoleFromCustom);
+            } else {
+                finalInput.value = selectElement.value;
+                finalInput.classList.remove('d-none');
+                
+                customInput.classList.add('d-none');
+                customInput.required = false;
+                customInput.removeEventListener('input', updateFinalRoleFromCustom);
+            }
+        }
+
+        function updateFinalRoleFromCustom() {
+            document.getElementById('finalRoleNameInput').value = this.value;
+        }
+
+        // Pre-fills editing modal inputs with clicked application's existing details
+        const editModal = document.getElementById('editAppModal');
+        if (editModal) {
+            editModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const id = button.getAttribute('data-id');
+                const name = button.getAttribute('data-name');
+                const desc = button.getAttribute('data-desc');
+                const url = button.getAttribute('data-url');
+                
+                document.getElementById('editAppId').value = id;
+                document.getElementById('editAppName').value = name;
+                document.getElementById('editAppDesc').value = desc;
+                document.getElementById('editAppUrl').value = url;
+            });
+        }
+    </script>
+}
+

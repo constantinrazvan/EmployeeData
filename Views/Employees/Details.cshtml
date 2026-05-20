@@ -1,0 +1,233 @@
+@model EmployeeData.Models.Person
+
+@{
+    ViewData["Title"] = "Employee Profile";
+    var now = DateTime.Now;
+    var tenure = now - Model.HireDate;
+    var tenureYears = (int)(tenure.TotalDays / 365);
+    var tenureMonths = (int)((tenure.TotalDays % 365) / 30);
+    var colors = new[] { "#6366f1","#8b5cf6","#06b6d4","#10b981","#f59e0b","#ef4444" };
+    var colorIdx = Math.Abs(Model.FullName.GetHashCode()) % colors.Length;
+    var avatarColor = colors[colorIdx];
+
+    // Upcoming anniversary?
+    var annivThisYear = new DateTime(now.Year, Model.HireDate.Month, Model.HireDate.Day);
+    if (annivThisYear < now.Date) annivThisYear = annivThisYear.AddYears(1);
+    var daysToAnniversary = (int)(annivThisYear - now.Date).TotalDays;
+    var showAnniversaryBadge = daysToAnniversary <= 7 && Model.HireDate.Year != now.Year;
+}
+
+<div class="mb-4 d-flex justify-content-between align-items-center">
+    <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm py-2 px-3 rounded-3 d-inline-flex align-items-center gap-2 fw-medium">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back
+    </a>
+    <button onclick="window.print()" class="btn btn-outline-secondary btn-sm py-2 px-3 rounded-3 d-inline-flex align-items-center gap-2 fw-medium no-print">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        Print Profile
+    </button>
+</div>
+
+@if (showAnniversaryBadge)
+{
+    <div class="alert alert-warning d-flex align-items-center gap-2 mb-4 border-0 shadow-sm" role="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        <strong>Work Anniversary:</strong> @Model.FirstName celebrates @(annivThisYear.Year - Model.HireDate.Year) year(s) at the company @(daysToAnniversary == 0 ? "today" : $"in {daysToAnniversary} day{(daysToAnniversary == 1 ? "" : "s")}")!
+    </div>
+}
+
+<div class="row g-4">
+    <!-- Left Column: Profile Card -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 rounded-3 overflow-hidden bg-white">
+            <!-- Colored header -->
+            <div class="p-4 text-white text-center" style="background: linear-gradient(135deg, @avatarColor 0%, @avatarColor 60%, rgba(0,0,0,0.15) 100%);">
+                <div class="rounded-circle d-inline-flex align-items-center justify-content-center text-white fw-bold mb-3 shadow"
+                     style="width:80px;height:80px;background:rgba(255,255,255,0.2);font-size:28px;backdrop-filter:blur(10px);">
+                    @(Model.FirstName.Length > 0 ? Model.FirstName[0].ToString() : "")@(Model.LastName.Length > 0 ? Model.LastName[0].ToString() : "")
+                </div>
+                <h4 class="fw-bold m-0">@Model.FullName</h4>
+                <p class="m-0 mt-1 opacity-75 small">@Model.Position</p>
+                <div class="mt-2">
+                    @if (Model.Status == "Active")
+                    {
+                        <span class="badge bg-white text-success px-3 py-1 fw-semibold">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-white text-danger px-3 py-1 fw-semibold">Inactive</span>
+                    }
+                </div>
+            </div>
+
+            <!-- Info section -->
+            <div class="p-4">
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="text-muted flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                        </div>
+                        <div>
+                            <div class="text-muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:600;">Department</div>
+                            <div class="fw-semibold text-dark">
+                                <span class="badge bg-secondary font-monospace me-1">@Model.Department?.Code</span>
+                                @Model.Department?.Name
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="text-muted flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:600;">Email</div>
+                            <a href="mailto:@Model.Email" class="fw-semibold text-primary text-decoration-none text-truncate d-block">@Model.Email</a>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="text-muted flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 5.61 5.61l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        </div>
+                        <div>
+                            <div class="text-muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:600;">Phone</div>
+                            <a href="tel:@Model.Phone" class="fw-semibold text-dark text-decoration-none">@Model.Phone</a>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="text-muted flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        </div>
+                        <div>
+                            <div class="text-muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:600;">Hire Date</div>
+                            <div class="fw-semibold text-dark">@Model.HireDate.ToString("MMMM dd, yyyy")</div>
+                        </div>
+                    </div>
+
+                    <!-- Tenure badge -->
+                    <div class="rounded-3 p-3 text-center" style="background: linear-gradient(135deg, @avatarColor 0%, @avatarColor 100%); opacity: .9;">
+                        <div class="text-white fw-bold fs-4">
+                            @tenureYears yr@(tenureYears == 1 ? "" : "s") @tenureMonths mo
+                        </div>
+                        <div class="text-white small opacity-75">Total tenure at company</div>
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="mt-4 d-flex flex-column gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary py-2 fw-semibold d-flex align-items-center justify-content-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        Edit Details
+                    </a>
+                    <a asp-controller="Onboarding" asp-action="Employee" asp-route-id="@Model.Id" class="btn btn-outline-primary py-2 fw-semibold d-flex align-items-center justify-content-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                        Onboarding Checklist
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="col-lg-8 d-flex flex-column gap-4">
+        <!-- Application Access Roles -->
+        <div class="card shadow-sm border-0 rounded-3 bg-white">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                    <div>
+                        <h5 class="fw-bold m-0 text-dark">Application Access Roles</h5>
+                        <p class="text-muted small m-0 mt-1">Applications where the employee has an active account.</p>
+                    </div>
+                    <a asp-controller="Roles" asp-action="Index" asp-route-personId="@Model.Id" class="btn btn-outline-primary btn-sm px-3 py-2 rounded-3 fw-semibold d-flex align-items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        Manage Roles
+                    </a>
+                </div>
+
+                @if (!Model.AppAccessRoles.Any())
+                {
+                    <div class="text-center py-4">
+                        <div class="text-muted opacity-25 mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        </div>
+                        <p class="text-muted m-0 small">No application access roles assigned yet.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle m-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Application</th>
+                                    <th>Assigned Role</th>
+                                    <th>Granted At</th>
+                                    <th>Granted By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var role in Model.AppAccessRoles)
+                                {
+                                    <tr>
+                                        <td>
+                                            <span class="text-dark fw-bold d-block">@role.Application?.Name</span>
+                                            <a href="@role.Application?.Url" target="_blank" class="text-muted small text-decoration-none">@role.Application?.Url</a>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success-subtle text-success font-monospace px-2 py-1 border border-success-subtle">@role.RoleName</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted small">@role.GrantedAt.ToString("dd.MM.yyyy HH:mm")</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted small">@@@role.GrantedBy</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Employment Summary Card -->
+        <div class="card shadow-sm border-0 rounded-3 bg-white">
+            <div class="card-body p-4">
+                <h5 class="fw-bold text-dark mb-4">Employment Summary</h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="rounded-3 p-3 bg-light text-center">
+                            <div class="fw-bold text-dark fs-5">@Model.HireDate.ToString("yyyy")</div>
+                            <div class="text-muted small">Year Joined</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="rounded-3 p-3 bg-light text-center">
+                            <div class="fw-bold text-dark fs-5">@tenureYears</div>
+                            <div class="text-muted small">Year@(tenureYears == 1 ? "" : "s") of Service</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="rounded-3 p-3 bg-light text-center">
+                            <div class="fw-bold text-dark fs-5">@Model.AppAccessRoles.Count</div>
+                            <div class="text-muted small">App Access Role@(Model.AppAccessRoles.Count == 1 ? "" : "s")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<style>
+@@media print {
+    .no-print, nav, header, footer, .btn { display: none !important; }
+    .card { box-shadow: none !important; border: 1px solid #dee2e6 !important; }
+    body { font-size: 12px !important; }
+}
+</style>
+}

@@ -1,0 +1,75 @@
+@model EmployeeData.Models.Department
+
+@{
+    ViewData["Title"] = "Add Department";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <!-- Back Button -->
+        <div class="mb-4">
+            <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm py-2 px-3 rounded-3 d-inline-flex align-items-center gap-2 fw-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back
+            </a>
+        </div>
+
+        <div class="card shadow-sm border-0 p-5 bg-white text-dark rounded-3">
+            <div class="mb-4 border-bottom pb-3">
+                <h3 class="fw-bold m-0 text-dark">New Department</h3>
+                <p class="text-muted small m-0 mt-1">Define a new department within the hierarchical structure.</p>
+            </div>
+
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-4"></div>
+
+                <div class="row g-4">
+                    <div class="col-md-8">
+                        <label asp-for="Name" class="form-label text-muted small fw-medium">Department Name</label>
+                        <input asp-for="Name" class="form-control" placeholder="e.g., Marketing & PR" required />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Code" class="form-label text-muted small fw-medium">Unique Code (Abbreviation)</label>
+                        <input asp-for="Code" class="form-control font-monospace text-uppercase" placeholder="e.g., MKT" maxlength="10" required />
+                        <span asp-validation-for="Code" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="ManagerName" class="form-label text-muted small fw-medium">Manager Full Name</label>
+                        <select asp-for="ManagerName" class="form-select" required>
+                            <option value="">-- Select Manager from list --</option>
+                            @if (ViewBag.EmployeesList != null)
+                            {
+                                foreach (var emp in ViewBag.EmployeesList)
+                                {
+                                    <option value="@emp">@emp</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="ManagerName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label text-muted small fw-medium">Brief activity description</label>
+                        <textarea asp-for="Description" rows="4" class="form-control" placeholder="Briefly describe the department responsibilities..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mt-5 d-flex gap-3 justify-content-end">
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary px-4 py-2.5 rounded-3 fw-semibold">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-5 py-2.5 rounded-3 fw-semibold">Create Department</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

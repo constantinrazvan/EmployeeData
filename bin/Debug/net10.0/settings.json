@@ -1,0 +1,35 @@
+{
+  "Database": {
+    "DbPath": "EmployeeData.db",
+    "Provider": "SQLite",
+    "ConnectionString": "",
+    "Server": "localhost",
+    "Port": 5432,
+    "DatabaseName": "EmployeeDataDb",
+    "Username": "",
+    "Password": ""
+  },
+  "Smtp": {
+    "Host": "localhost",
+    "Port": 25,
+    "Username": "",
+    "Password": "",
+    "EnableSsl": false,
+    "FromEmail": "noreply@organization.local",
+    "FromName": "Organization Portal"
+  },
+  "Templates": [
+    {
+      "Id": "access_granted",
+      "Name": "Access Granted in Application",
+      "Subject": "Access Granted to {AppName}",
+      "Body": "Hello {EmployeeName},\n\nWe confirm that you have been granted access to application '{AppName}' with role '{RoleName}'.\n\nYou can access the application directly at: {AppUrl}.\n\nChange made by: {GrantedBy}.\n\nRegards,\nThe {FromName} Team"
+    },
+    {
+      "Id": "access_revoked",
+      "Name": "Access Revoked from Application",
+      "Subject": "Access Revoked from {AppName}",
+      "Body": "Hello {EmployeeName},\n\nWe inform you that your access to application '{AppName}' (previous role: '{RoleName}') has been revoked.\n\nIf you believe this is an error, please contact the system administrator or the IT team.\n\nRegards,\nThe {FromName} Team"
+    }
+  ]
+}

@@ -1,0 +1,226 @@
+@{
+    ViewData["Title"] = "HR Reports";
+    var headcount = ViewBag.HeadcountData as IEnumerable<dynamic>;
+    var tenureBands = ViewBag.TenureBands as IEnumerable<dynamic>;
+    var hiresPerMonth = ViewBag.HiresPerMonth as IEnumerable<dynamic>;
+    var mostTenured = ViewBag.MostTenured as IEnumerable<dynamic>;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary me-2" style="vertical-align:-4px"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            HR Reports
+        </h2>
+        <p class="text-muted small m-0">Analytics and workforce reports - exportable as CSV</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="ExportEmployees" class="btn btn-primary d-flex align-items-center gap-2 fw-semibold">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Export All Employees
+        </a>
+        <a href="javascript:history.back()" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back
+        </a>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-4 bg-primary text-white">
+            <div class="d-flex align-items-center gap-3">
+                <div class="p-3 rounded-3 bg-white bg-opacity-25 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                </div>
+                <div>
+                    <p class="text-white-50 small m-0">Active Employees</p>
+                    <h3 class="fw-bold m-0 text-white">@ViewBag.TotalActive</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-4 bg-primary text-white">
+            <div class="d-flex align-items-center gap-3">
+                <div class="p-3 rounded-3 bg-white bg-opacity-25 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                </div>
+                <div>
+                    <p class="text-white-50 small m-0">Inactive Employees</p>
+                    <h3 class="fw-bold m-0 text-white">@ViewBag.TotalInactive</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-4 bg-primary text-white">
+            <div class="d-flex align-items-center gap-3">
+                <div class="p-3 rounded-3 bg-white bg-opacity-25 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                </div>
+                <div>
+                    <p class="text-white-50 small m-0">Turnover Rate</p>
+                    <h3 class="fw-bold m-0 text-white">@ViewBag.TurnoverRate%</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <!-- Headcount by Department Table -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark m-0">Headcount by Department</h5>
+                    <a asp-action="ExportHeadcount" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        CSV
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Department</th>
+                                <th>Manager</th>
+                                <th class="text-center">Total</th>
+                                <th class="text-center">Active</th>
+                                <th class="text-center">Inactive</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (headcount != null)
+                            {
+                                @foreach (var row in headcount)
+                                {
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-secondary font-monospace me-1">@row.Code</span>
+                                            <span class="fw-medium">@row.Department</span>
+                                        </td>
+                                        <td class="text-muted small">@row.Manager</td>
+                                        <td class="text-center fw-bold">@row.Total</td>
+                                        <td class="text-center"><span class="badge bg-success-subtle text-success border border-success-subtle">@row.Active</span></td>
+                                        <td class="text-center"><span class="badge bg-danger-subtle text-danger border border-danger-subtle">@row.Inactive</span></td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tenure Distribution -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <h5 class="fw-bold text-dark mb-3">Tenure Distribution</h5>
+                @if (tenureBands != null)
+                {
+                    var totalForTenure = ViewBag.TotalActive + ViewBag.TotalInactive;
+                    @foreach (var band in tenureBands)
+                    {
+                        var pct = totalForTenure > 0 ? Math.Round((double)band.Count / totalForTenure * 100, 0) : 0;
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="small fw-medium text-dark">@band.Label</span>
+                                <span class="small text-muted">@band.Count employees (@pct%)</span>
+                            </div>
+                            <div class="progress" style="height:8px;border-radius:4px;">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: @pct%" aria-valuenow="@pct" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Hires per Month Chart -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h5 class="fw-bold text-dark mb-3">Hiring Trend (Last 12 Months)</h5>
+                <div style="height:200px;position:relative;">
+                    <canvas id="hiresChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Most Tenured -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <h5 class="fw-bold text-dark mb-3">Most Tenured Employees</h5>
+                @if (mostTenured != null)
+                {
+                    int rank = 1;
+                    @foreach (var emp in mostTenured)
+                    {
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style="width:32px;height:32px;font-size:13px;">
+                                @rank
+                            </div>
+                            <div class="flex-grow-1 min-w-0">
+                                <div class="fw-semibold text-dark text-truncate" style="font-size:13px;">@emp.FullName</div>
+                                <div class="text-muted" style="font-size:12px;">@emp.Position · @emp.Department</div>
+                            </div>
+                            <div class="text-muted small flex-shrink-0">@emp.Years yr@(emp.Years == 1 ? "" : "s")</div>
+                        </div>
+                        rank++;
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    const hiresCtx = document.getElementById('hiresChart').getContext('2d');
+    const hiresLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        (hiresPerMonth as IEnumerable<dynamic>)?.Select(x => (string)x.Month).ToList() ?? new List<string>()
+    ));
+    const hiresCounts = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        (hiresPerMonth as IEnumerable<dynamic>)?.Select(x => (int)x.Count).ToList() ?? new List<int>()
+    ));
+
+    new Chart(hiresCtx, {
+        type: 'line',
+        data: {
+            labels: hiresLabels,
+            datasets: [{
+                label: 'New Hires',
+                data: hiresCounts,
+                borderColor: 'rgb(99, 102, 241)',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                borderWidth: 2.5,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: 'rgb(99, 102, 241)',
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.05)' } },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+            }
+        }
+    });
+</script>
+}

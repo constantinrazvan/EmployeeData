@@ -1,0 +1,64 @@
+@model EmployeeData.Models.Person
+
+@{
+    ViewData["Title"] = "Delete Employee";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <!-- Back Button -->
+        <div class="mb-4">
+            <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm py-2 px-3 rounded-3 d-inline-flex align-items-center gap-2 fw-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back
+            </a>
+        </div>
+
+        <div class="card shadow-sm border-0 p-5 bg-white text-dark rounded-3 border-top border-5 border-danger">
+            <div class="text-center mb-4">
+                <div class="p-3 bg-danger-subtle text-danger mb-3 d-inline-flex align-items-center justify-content-center rounded-circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                </div>
+                <h3 class="fw-bold m-0 text-danger">Confirm Deletion?</h3>
+                <p class="text-muted small m-0 mt-2">This action is <strong>permanent</strong> and will automatically revoke all associated access roles in applications.</p>
+            </div>
+
+            <div class="card p-4 rounded-3 bg-light border-0 mb-4">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Employee</span>
+                        <span class="fw-bold text-dark fs-5">@Model.FullName</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Position</span>
+                        <span class="text-dark fw-medium fs-5">@Model.Position</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Department</span>
+                        <span class="badge bg-secondary font-monospace">@Model.Department?.Code</span>
+                        <span class="text-dark ms-1 fw-medium">@Model.Department?.Name</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Email Address</span>
+                        <span class="text-dark fw-medium">@Model.Email</span>
+                    </div>
+                </div>
+            </div>
+
+            <form asp-action="Delete">
+                <input type="hidden" asp-for="Id" />
+                <div class="d-flex gap-3 justify-content-center">
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary px-4 py-2.5 rounded-3 fw-semibold">Cancel</a>
+                    <button type="submit" class="btn btn-danger px-5 py-2.5 rounded-3 fw-semibold">Permanently Delete Employee</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
