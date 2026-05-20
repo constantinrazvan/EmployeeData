@@ -70,12 +70,24 @@
                     </div>
 
                     <div class="col-md-6">
+                        <label asp-for="ContractPeriod" class="form-label text-muted small fw-medium">Contract Type</label>
+                        <select asp-for="ContractPeriod" class="form-select" asp-items="Html.GetEnumSelectList<EmployeeData.Models.Enums.ContractPeriod>()" required></select>
+                        <span asp-validation-for="ContractPeriod" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
                         <label asp-for="Status" class="form-label text-muted small fw-medium">Initial Status</label>
                         <select asp-for="Status" class="form-select">
                             <option value="Active">Active</option>
                             <option value="Inactive">Inactive</option>
                         </select>
                         <span asp-validation-for="Status" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="TerminationDate" class="form-label text-muted small fw-medium">Termination Date (Optional)</label>
+                        <input asp-for="TerminationDate" type="date" class="form-control" />
+                        <span asp-validation-for="TerminationDate" class="text-danger small"></span>
                     </div>
                 </div>
 
@@ -90,4 +102,71 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const contractSelect = document.getElementById("ContractPeriod");
+            const hireDateInput = document.getElementById("HireDate");
+            const terminationInput = document.getElementById("TerminationDate");
+
+            function updateTerminationDate() {
+                const contractVal = parseInt(contractSelect.value);
+                const hireDateVal = hireDateInput.value;
+
+                if (!hireDateVal) return;
+
+                // Permanent (0)
+                if (contractVal === 0) {
+                    terminationInput.value = "";
+                    terminationInput.disabled = true;
+                    terminationInput.removeAttribute("required");
+                    terminationInput.parentElement.style.opacity = "0.5";
+                } else {
+                    terminationInput.disabled = false;
+                    terminationInput.setAttribute("required", "required");
+                    terminationInput.parentElement.style.opacity = "1";
+                    terminationInput.min = hireDateVal;
+
+                    // Only set default if not already set by user
+                    if (!terminationInput.value) {
+                        let hireDate = new Date(hireDateVal);
+                        if (isNaN(hireDate.getTime())) return;
+
+                        if (contractVal === 1) { // Temporary
+                            hireDate.setFullYear(hireDate.getFullYear() + 1);
+                        } else if (contractVal === 2) { // Internship
+                            hireDate.setMonth(hireDate.getMonth() + 3);
+                        } else if (contractVal === 3) { // Freelance
+                            hireDate.setMonth(hireDate.getMonth() + 6);
+                        } else if (contractVal === 4) { // NotPermanent
+                            hireDate.setMonth(hireDate.getMonth() + 6);
+                        }
+
+                        const yyyy = hireDate.getFullYear();
+                        let mm = hireDate.getMonth() + 1;
+                        let dd = hireDate.getDate();
+                        if (mm < 10) mm = '0' + mm;
+                        if (dd < 10) dd = '0' + dd;
+
+                        terminationInput.value = `${yyyy}-${mm}-${dd}`;
+                    }
+                }
+            }
+
+            if (contractSelect && hireDateInput && terminationInput) {
+                contractSelect.addEventListener("change", function() {
+                    // Force recalculate if switching to temporary types
+                    if (parseInt(contractSelect.value) !== 0) {
+                        terminationInput.value = ""; 
+                    }
+                    updateTerminationDate();
+                });
+                hireDateInput.addEventListener("change", function() {
+                    terminationInput.value = "";
+                    updateTerminationDate();
+                });
+                updateTerminationDate();
+            }
+        });
+    </script>
 }

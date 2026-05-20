@@ -117,7 +117,7 @@ public class EmployeesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("FirstName,LastName,Email,Phone,Position,DepartmentId,HireDate,Status")] Person person)
+    public async Task<IActionResult> Create([Bind("FirstName,LastName,Email,Phone,Position,DepartmentId,HireDate,Status,ContractPeriod,TerminationDate")] Person person)
     {
         if (ModelState.IsValid)
         {
@@ -151,7 +151,7 @@ public class EmployeesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,LastName,Email,Phone,Position,DepartmentId,HireDate,Status")] Person person)
+    public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,LastName,Email,Phone,Position,DepartmentId,HireDate,Status,ContractPeriod,TerminationDate")] Person person)
     {
         if (id != person.Id) return NotFound();
 
@@ -164,7 +164,7 @@ public class EmployeesController : Controller
                 await _context.SaveChangesAsync();
 
                 var dept = await _context.Departments.FindAsync(person.DepartmentId);
-                var changes = $"Name: '{person.FullName}', Position: '{person.Position}', Department: {dept?.Name}, Status: {person.Status}";
+                var changes = $"Name: '{person.FullName}', Position: '{person.Position}', Department: {dept?.Name}, Status: {person.Status}, Contract: {person.ContractPeriod}";
                 if (oldPerson != null && oldPerson.Status != person.Status)
                     changes += $" (Status changed from {oldPerson.Status} to {person.Status})";
                 LogActivity("Edit Employee", $"Updated details of employee '{person.FullName}' (ID: {id}). Current details: {changes}.");

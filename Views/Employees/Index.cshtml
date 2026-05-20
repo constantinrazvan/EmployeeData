@@ -184,7 +184,30 @@
                                 <span class="text-muted small d-block d-md-inline ms-md-1">@item.Department?.Name</span>
                             </td>
                             <td>
-                                <span class="text-dark fw-medium">@item.Position</span>
+                                <span class="text-dark fw-medium d-block">@item.Position</span>
+                                @{
+                                    var badgeClass = item.ContractPeriod switch
+                                    {
+                                        EmployeeData.Models.Enums.ContractPeriod.Permanent => "bg-success-subtle text-success border border-success-subtle",
+                                        EmployeeData.Models.Enums.ContractPeriod.Temporary => "bg-warning-subtle text-warning border border-warning-subtle",
+                                        EmployeeData.Models.Enums.ContractPeriod.Internship => "bg-info-subtle text-info border border-info-subtle",
+                                        EmployeeData.Models.Enums.ContractPeriod.Freelance => "bg-primary-subtle text-primary border border-primary-subtle",
+                                        _ => "bg-secondary-subtle text-secondary border border-secondary-subtle"
+                                    };
+                                }
+                                <span class="badge @badgeClass mt-1" style="font-size: 10px; font-weight: 600; padding: 3px 6px;">@item.ContractPeriod</span>
+                                @if (item.TerminationDate.HasValue)
+                                {
+                                    <span class="text-danger small d-block mt-1" style="font-size: 10.5px; font-weight: 500;">
+                                        Ends: @item.TerminationDate.Value.ToString("dd.MM.yyyy")
+                                    </span>
+                                }
+                                else if (item.EstimatedTerminationDate.HasValue)
+                                {
+                                    <span class="text-warning small d-block mt-1" style="font-size: 10.5px; font-weight: 500;">
+                                        Est. End: @item.EstimatedTerminationDate.Value.ToString("dd.MM.yyyy")
+                                    </span>
+                                }
                             </td>
                             <td>
                                 <span class="text-dark d-block small">@item.Email</span>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using EmployeeData.Models.Enums;
 
 namespace EmployeeData.Models;
 
@@ -36,6 +37,28 @@ public class Person
     public Department? Department { get; set; }
 
     public DateTime HireDate { get; set; } = DateTime.Today;
+
+    public ContractPeriod ContractPeriod { get; set; } = ContractPeriod.Permanent;
+    public DateTime? TerminationDate { get; set; }
+
+    public DateTime? EstimatedTerminationDate
+    {
+        get
+        {
+            if (ContractPeriod == ContractPeriod.Permanent)
+            {
+                return null;
+            }
+            return ContractPeriod switch
+            {
+                ContractPeriod.Internship => HireDate.AddMonths(3),
+                ContractPeriod.Freelance => HireDate.AddMonths(6),
+                ContractPeriod.Temporary => HireDate.AddYears(1),
+                ContractPeriod.NotPermanent => HireDate.AddMonths(6),
+                _ => HireDate.AddMonths(6)
+            };
+        }
+    }
 
     [Required]
     [StringLength(20)]
