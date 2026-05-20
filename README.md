@@ -3,6 +3,13 @@
 A clean, internal HR management tool built with ASP.NET Core MVC. It helps small and medium teams keep track of employees, departments, app access, and onboarding - all in one place, without the overhead of enterprise software.
 
 ---
+## Purpose
+
+EmployeeData plans to be an open-source tool for small and medium-sized teams that need a simple way to manage employees, departments, onboarding, hosting on-premise and internal application access without the overhead of enterprise HR software.
+
+The project is also meant to serve as a starting point for developers who want to learn, customize, improve, or build their own HR management solution starting from something general and basic.
+
+--
 
 ## What it does
 
